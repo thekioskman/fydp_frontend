@@ -28,13 +28,13 @@ class _LoginPageState extends State<LoginPage> {
         if (_formKey.currentState!.validate()) {
         final email = _emailController.text;
         final password = _passwordController.text;
-        final apiUrl = dotenv.env['API_URL'] ?? 'http://localhost:3000'; //env for we dont need to change all the endpoints when we shift to prod
+        final apiUrl = dotenv.env['API_URL'] ?? 'http://localhost:3000/dancemeet'; //env for we dont need to change all the endpoints when we shift to prod
 
 
         // Simulate sending a request to the backend
         try {
             final response = await http.post(
-                Uri.parse('$apiUrl/dancemeet/login'),
+                Uri.parse('$apiUrl/login'),
                 headers: {'Content-Type': 'application/json'},
                 body: jsonEncode({'email': email, 'password': password}),
             );
