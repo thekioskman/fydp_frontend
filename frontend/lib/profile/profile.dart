@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'components/clubtag.dart';
+import 'pages/profiletop.dart';
 
 class ProfileMainPage extends StatefulWidget {
   const ProfileMainPage({super.key});
@@ -31,110 +31,9 @@ class _ProfileMainPageState extends State<ProfileMainPage> {
       ),
       body: Column(
         children: [
-          // Top Profile Section -----------------------------------------------------
-          // Profile Picture
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Center(
-              child: CircleAvatar(
-                radius: 40,
-                backgroundImage: NetworkImage(profilePicUrl),
-              ),
-            ),
-          ),
-          // Profile Info (Name, Username, Bio)
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  firstName + ' ' + lastName,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                Text(
-                  '@$username',
-                  style: TextStyle(fontWeight: FontWeight.normal, fontSize: 14, fontStyle: FontStyle.italic),
-                ),
-                SizedBox(height: 8),
-                Text(bio),
-              ],
-            )
-          ),
-          SizedBox(height: 20),
-          Divider(),
-
-          // Profile Stats --> look into how far apart we want the stats to be...
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerRight, 
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 24.0),
-                      child: _buildStatColumn('Friends', friendsCount),
-                    )
-                  ),
-                ),
-                _buildStatColumn('Events Attended', eventsAttendedCount),
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerLeft, 
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 24.0),
-                      child: _buildStatColumn('Total Hours', totalTime),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // SizedBox(height: 10),
-
-          // Club Tags -----------------------------------------------------
-          Divider(), // remove
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(height: 8),
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 12, // Vertical space between rows of tags
-                  children: clubs.map((club) => ClubTag(clubName: club, clubPageRoute: "/compare",)).toList(),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 10),
-
-          // Upcoming Events Section!!! -----------------------------------------------------
-          // Padding(
-          //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          //   child: 
-          // )
+          ProfileTopPage(),
         ],
       ),
-    );
-  }
-
-  Widget _buildStatColumn(String label, int count) {
-    return Column(
-      children: [
-        Center(
-          child: Text(label, style: TextStyle(fontSize: 14)),
-        ), 
-        Center(
-          child: Text(
-            count.toString(),
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-        ),
-      ],
     );
   }
 }
