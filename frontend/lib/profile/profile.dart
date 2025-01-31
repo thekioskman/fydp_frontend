@@ -70,25 +70,25 @@ class _ProfileMainPageState extends State<ProfileMainPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Expanded(child: Container()),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 120.0,
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerRight, 
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 24.0),
                       child: _buildStatColumn('Friends', friendsCount),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: _buildStatColumn('Events Attended', eventsAttendedCount),
-                    ),
-                    Container(
-                      width: 120.0,
+                    )
+                  ),
+                ),
+                _buildStatColumn('Events Attended', eventsAttendedCount),
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerLeft, 
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 24.0),
                       child: _buildStatColumn('Total Hours', totalTime),
                     ),
-                  ],
+                  ),
                 ),
-                Expanded(child: Container()),
               ],
             ),
           ),
