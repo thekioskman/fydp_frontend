@@ -6,8 +6,7 @@ import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class LoginPage extends StatefulWidget {
-    final String title;
-    const LoginPage({super.key, required this.title});
+    const LoginPage({super.key});
     @override
     _LoginPageState createState() => _LoginPageState();
 }

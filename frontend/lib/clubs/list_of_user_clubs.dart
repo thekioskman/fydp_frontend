@@ -3,6 +3,8 @@ import 'dart:convert'; // For decoding JSON
 import 'package:http/http.dart' as http; // For HTTP requests
 
 class ClubsScreen extends StatefulWidget {
+  const ClubsScreen({super.key});
+
   @override
   _ClubsScreenState createState() => _ClubsScreenState();
 }

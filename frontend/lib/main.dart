@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/posts/club_posts_page.dart';
-import 'login/login.dart';
 import 'video_compare/video_compare.dart';
 import 'clubs/list_of_user_clubs.dart';
+import 'login/login.dart';
 
 void main() {
   runApp(const MyApp());
@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
 	  ),
       initialRoute: '/',
       routes: {
-        '/': (context) => PostsPage(),
+        '/': (context) => LoginPage(),
         '/compare': (context) => VideoComparePage(),
         '/club_list' : (context) => ClubsScreen()
       },
