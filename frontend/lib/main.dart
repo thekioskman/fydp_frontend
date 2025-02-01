@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'login/login.dart';
 import 'video_compare/video_compare.dart';
-import 'profile/profile.dart';
+import 'profile/profilemain.dart';
 
 void main() {
   runApp(const MyApp());
@@ -37,10 +37,10 @@ class MyApp extends StatelessWidget {
 	  ),
       initialRoute: '/',
       routes: {
-        '/': (context) => VideoComparePage(),
+        '/': (context) => ProfileMainPage(),
         '/compare': (context) => VideoComparePage(),
-		'/login': (context) => LoginPage(title: 'Login'),
-		'/profile': (context) => ProfileMainPage(),
+        '/login': (context) => LoginPage(title: 'Login'),
+        '/profile': (context) => ProfileMainPage(),
       },
 	);
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'clubtag.dart';
 import 'followbutton.dart';
+import '../../club/club.dart';
 
 class ProfileTopPage extends StatefulWidget {
   const ProfileTopPage({super.key});
@@ -20,7 +21,11 @@ class _ProfileTopPageState extends State<ProfileTopPage> {
   final int totalTime = 500; // Time in hours...?
   // something about clubs here...?
   // TODO: replace with logic to get user's clubs -> need more details like club link, club colour, etc...
-  final List<String> clubs = ['UWHH', 'Origins', 'HaebeatDanceCrew']; 
+  final List<Club> clubs = [
+    Club(name: 'UWHH', pageRoute: '/compare'), 
+    Club(name: 'Origins', pageRoute: '/compare', color: Colors.green), 
+    Club(name: 'HaebeatDanceCrew', pageRoute: '/compare', color: Colors.yellow),
+  ]; 
 
   // Personal profile vs. someone else's profile
   final bool isOwnProfile = false;
@@ -98,7 +103,6 @@ class _ProfileTopPageState extends State<ProfileTopPage> {
               ],
             ),
           ),
-          // SizedBox(height: 10),
 
           // Club Tags -----------------------------------------------------
           Divider(), // remove
@@ -111,18 +115,12 @@ class _ProfileTopPageState extends State<ProfileTopPage> {
                 Wrap(
                   spacing: 16,
                   runSpacing: 12, // Vertical space between rows of tags
-                  children: clubs.map((club) => ClubTag(clubName: club, clubPageRoute: "/compare",)).toList(),
+                  children: clubs.map((club) => ClubTag(clubName: club.name, clubPageRoute: club.pageRoute, clubColor: club.color)).toList(),
                 ),
               ],
             ),
           ),
           SizedBox(height: 10),
-
-          // Upcoming Events Section!!! -----------------------------------------------------
-          // Padding(
-          //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          //   child: 
-          // )
         ],
       );
   }
