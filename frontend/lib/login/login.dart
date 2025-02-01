@@ -4,6 +4,7 @@ import 'signup.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
     const LoginPage({super.key});
@@ -17,57 +18,83 @@ class _LoginPageState extends State<LoginPage> {
     final _passwordController = TextEditingController();
 
     @override
+    void initState() {
+        super.initState();
+        _checkLoginStatus();  // Check login status when LoginPage loads
+    }
+
+    @override
     void dispose() {
         _emailController.dispose();
         _passwordController.dispose();
         super.dispose();
     }
 
-    void _login() async {
-        if (_formKey.currentState!.validate()) {
-        final email = _emailController.text;
-        final password = _passwordController.text;
-        final apiUrl = dotenv.env['API_URL'] ?? 'http://localhost:3000'; //env for we dont need to change all the endpoints when we shift to prod
+    void _checkLoginStatus() async {
+        final prefs = await SharedPreferences.getInstance();
+        final storedEmail = prefs.getString('user_email');
 
-
-        // Simulate sending a request to the backend
-        try {
-            final response = await http.post(
-                Uri.parse('$apiUrl/dancemeet/login'),
-                headers: {'Content-Type': 'application/json'},
-                body: jsonEncode({'email': email, 'password': password}),
-            );
-
-            if (!mounted) return; //checks if the widget is still mounted after the user returns
-
-            if (response.statusCode == 200) {
-                final responseBody = jsonDecode(response.body);
-                if (responseBody['success'] == true) {
-                    // Navigate to HomePage on successful login
-                    Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => HomePage(user_email: email)),
-                    );
-                } else {
-                    // Show error message from backend
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(responseBody['message'] ?? 'Login failed')),
-                    );
-                }
-            } else {
-                // Handle server errors
-                ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Server error. Please try again later.')),
-                );
-            }
-        } catch (e) {
-            // Handle network errors
-            ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Network error: $e')),
+        if (storedEmail != null) {
+            // Navigate to HomePage automatically
+            if (!mounted) return;
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => HomePage(user_email: storedEmail)),
             );
         }
     }
-}
+
+
+    void _login() async {
+        if (_formKey.currentState!.validate()) {
+            final email = _emailController.text;
+            final password = _passwordController.text;
+            final apiUrl = 'http://10.0.2.2:8000';
+
+            print(apiUrl);
+            // Simulate sending a request to the backend
+            try {
+                final response = await http.post(
+                    Uri.parse('$apiUrl/login'),
+                    headers: {'Content-Type': 'application/json'},
+                    body: jsonEncode({'user_name': email, 'password': password}),
+                );
+                if (!mounted) return; //maybe the user closed the app while this was running
+
+                if (response.statusCode == 200) {
+                    final responseBody = jsonDecode(response.body);
+                    if (responseBody['success'] == true) {
+                        // Navigate to HomePage on successful login
+
+                        //Save credentials one succesful login
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setString('user_email', email);
+
+                        if (!mounted) return;
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => HomePage(user_email: email)),
+                        );
+                    } else {
+                        // Show error message from backend
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(responseBody['message'] ?? 'Login failed')),
+                        );
+                    }
+                } else {
+                    // Handle server errors
+                    ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Server error. Please try again later.')),
+                    );
+                }
+            } catch (e) {
+                // Handle network errors
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Network error: $e')),
+                );
+            }
+        }
+    }
 
     void _signUp() {
         Navigator.push(
