@@ -49,9 +49,8 @@ class _LoginPageState extends State<LoginPage> {
         if (_formKey.currentState!.validate()) {
             final email = _emailController.text;
             final password = _passwordController.text;
-            final apiUrl = 'http://10.0.2.2:8000';
+            final apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
 
-            print(apiUrl);
             // Simulate sending a request to the backend
             try {
                 final response = await http.post(
@@ -99,7 +98,7 @@ class _LoginPageState extends State<LoginPage> {
     void _signUp() {
         Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const SignUpPage()),
+            MaterialPageRoute(builder: (context) =>  SignUpPage()),
         );
     }
 
