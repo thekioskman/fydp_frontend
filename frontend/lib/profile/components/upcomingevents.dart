@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/profile/profilemain.dart';
 import '../../club/event.dart';
+import '../../login/login.dart'; // TODO: remove later
+
 
 class UpcomingEventsPage extends StatefulWidget {
   const UpcomingEventsPage({super.key});
@@ -105,8 +107,10 @@ class _UpcomingEventsPageState extends State<UpcomingEventsPage> {
                       ),
                       child: IconButton(
                         onPressed: () {
-                          Navigator.pushNamed(
-                              context, mostRecentEvent.eventUrl);
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => LoginPage(title: "Login from club")) // TODO: fix this later with the event page, get event page by event name! -> event ID...?
+                          );
                         },
                         color: Colors.blue,
                         icon: Icon(

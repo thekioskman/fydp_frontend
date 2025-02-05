@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../login/login.dart'; // TODO: remove later
 
 
 class ClubTag extends StatelessWidget {
@@ -16,7 +17,10 @@ class ClubTag extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         // Navigate to the club page when tapped
-        Navigator.pushNamed(context, clubPageRoute);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => LoginPage(title: "Login from club")) // TODO: fix this later with the club page, get club page by club name! -> might introduce club ID in future
+        );
       },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),

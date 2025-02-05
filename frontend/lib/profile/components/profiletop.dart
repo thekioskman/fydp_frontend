@@ -22,9 +22,9 @@ class _ProfileTopPageState extends State<ProfileTopPage> {
   // something about clubs here...?
   // TODO: replace with logic to get user's clubs -> need more details like club link, club colour, etc...
   final List<Club> clubs = [
-    Club(name: 'UWHH', pageRoute: '/compare'), 
-    Club(name: 'Origins', pageRoute: '/compare', color: Colors.green), 
-    Club(name: 'HaebeatDanceCrew', pageRoute: '/compare', color: Colors.yellow),
+    Club(name: 'UWHH', pageRoute: '/login'), 
+    Club(name: 'Origins', pageRoute: '/login', color: Colors.green), 
+    Club(name: 'HaebeatDanceCrew', pageRoute: '/login', color: Colors.yellow),
   ]; 
 
   // Personal profile vs. someone else's profile
