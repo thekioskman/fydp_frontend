@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'login/login.dart';
 import 'video_compare/video_compare.dart';
 import 'profile/profilemain.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart'; // https://pub.dev/packages/persistent_bottom_nav_bar
 
 void main() {
   runApp(const MyApp());
@@ -35,14 +36,65 @@ class MyApp extends StatelessWidget {
 		colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
 		useMaterial3: true,
 	  ),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => ProfileMainPage(),
-        '/compare': (context) => VideoComparePage(),
-        '/login': (context) => LoginPage(title: 'Login'),
-        '/profile': (context) => ProfileMainPage(),
-      },
-	);
+    home: MainScreen(),
+	  );
   }
+}
+
+class MainScreen extends StatefulWidget {
+  @override
+  _MainScreenState createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  PersistentTabController _controller = PersistentTabController(initialIndex: 0);
+
+  // List all pages that need to be built here
+  List<Widget> _buildScreens() {
+    return [
+      ProfileMainPage(key: UniqueKey()),
+      VideoComparePage(key: UniqueKey()),
+      LoginPage(title: 'Login'),
+    ];
+  }
+
+  // Add all screens that can be navigated to here
+  List<PersistentBottomNavBarItem> _navBarsItems() {
+    return [
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.person),
+        title: "Profile",
+        activeColorPrimary: Colors.blue,
+        inactiveColorPrimary: Colors.grey,
+      ),
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.video_collection),
+        title: "Compare",
+        activeColorPrimary: Colors.blue,
+        inactiveColorPrimary: Colors.grey,
+      ),
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.login),
+        title: "Login",
+        activeColorPrimary: Colors.blue,
+        inactiveColorPrimary: Colors.grey,
+      ),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PersistentTabView(
+      context,
+      controller: _controller,
+      screens: _buildScreens(),
+      items: _navBarsItems(),
+      navBarStyle: NavBarStyle.style3, // Change style as needed
+      onItemSelected: (index) { // Refresh the page each time we click on it in the navbar
+        setState(() {});
+      },
+    );
+  }
+
 }
 
