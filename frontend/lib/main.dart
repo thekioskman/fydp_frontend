@@ -1,13 +1,28 @@
 import 'package:flutter/material.dart';
-import 'login/login.dart';
+import 'package:frontend/posts/club_posts_page.dart';
 import 'video_compare/video_compare.dart';
 import 'profile/profilemain.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart'; // https://pub.dev/packages/persistent_bottom_nav_bar
+import 'clubs/list_of_user_clubs.dart';
+import 'login/login.dart';
+import 'user_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final userProvider = UserProvider();
+  await userProvider.loadUserId(); // Load user ID before app starts
+  await dotenv.load();
+
+
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => userProvider,
+      child: MyApp(),
+    ),
+  );
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -92,6 +107,7 @@ class _MainScreenState extends State<MainScreen> {
       navBarStyle: NavBarStyle.style3, // Change style as needed
       onItemSelected: (index) { // Refresh the page each time we click on it in the navbar
         setState(() {});
+
       },
     );
   }
