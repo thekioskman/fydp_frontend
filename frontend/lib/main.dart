@@ -69,7 +69,7 @@ class _MainScreenState extends State<MainScreen> {
     return [
       ProfileMainPage(key: UniqueKey()),
       VideoComparePage(key: UniqueKey()),
-      LoginPage(title: 'Login'),
+      LoginPage(),
     ];
   }
 

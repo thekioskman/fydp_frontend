@@ -109,7 +109,7 @@ class _UpcomingEventsPageState extends State<UpcomingEventsPage> {
                         onPressed: () {
                           Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => LoginPage(title: "Login from club")) // TODO: fix this later with the event page, get event page by event name! -> event ID...?
+                              MaterialPageRoute(builder: (context) => LoginPage()) // TODO: fix this later with the event page, get event page by event name! -> event ID...?
                           );
                         },
                         color: Colors.blue,

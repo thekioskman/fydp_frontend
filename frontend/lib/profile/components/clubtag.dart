@@ -19,7 +19,7 @@ class ClubTag extends StatelessWidget {
         // Navigate to the club page when tapped
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => LoginPage(title: "Login from club")) // TODO: fix this later with the club page, get club page by club name! -> might introduce club ID in future
+          MaterialPageRoute(builder: (context) => LoginPage()) // TODO: fix this later with the club page, get club page by club name! -> might introduce club ID in future
         );
       },
       child: Container(
