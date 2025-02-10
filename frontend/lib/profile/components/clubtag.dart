@@ -10,7 +10,7 @@ class ClubTag extends StatelessWidget {
   // Define a default internal color
   static const Color _defaultColor = Colors.blueAccent;
 
-  ClubTag({required this.clubName, required this.clubPageRoute, this.clubColor});
+  const ClubTag({super.key, required this.clubName, required this.clubPageRoute, this.clubColor});
 
   @override
   Widget build(BuildContext context) {

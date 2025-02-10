@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/posts/club_posts_page.dart';
 import 'video_compare/video_compare.dart';
 import 'profile/profilemain.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart'; // https://pub.dev/packages/persistent_bottom_nav_bar
-import 'clubs/list_of_user_clubs.dart';
 import 'login/login.dart';
 import 'user_provider.dart';
 import 'package:provider/provider.dart';
@@ -57,12 +55,14 @@ class MyApp extends StatelessWidget {
 }
 
 class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
   @override
   _MainScreenState createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
-  PersistentTabController _controller = PersistentTabController(initialIndex: 0);
+  final PersistentTabController _controller = PersistentTabController(initialIndex: 0);
 
   // List all pages that need to be built here
   List<Widget> _buildScreens() {

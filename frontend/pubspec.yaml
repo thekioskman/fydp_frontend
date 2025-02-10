@@ -44,6 +44,7 @@ dependencies:
   persistent_bottom_nav_bar: ^6.2.1
   shared_preferences: ^2.5.1
   provider: ^6.1.2
+  flutter_plugin_android_lifecycle: ^2.0.24  # Add this line
 
 
 dev_dependencies:

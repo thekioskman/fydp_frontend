@@ -52,7 +52,7 @@ class _ProfileTopPageState extends State<ProfileTopPage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  firstName + ' ' + lastName,
+                  '$firstName $lastName',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 Text(

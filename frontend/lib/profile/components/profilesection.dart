@@ -1,7 +1,5 @@
 // This class is for any generic profile section (e.g. Session, Covers, etc. of the figma)
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import '../pages/profilevideosmain.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
