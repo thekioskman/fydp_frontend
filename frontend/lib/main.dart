@@ -67,9 +67,9 @@ class _MainScreenState extends State<MainScreen> {
   // List all pages that need to be built here
   List<Widget> _buildScreens() {
     return [
+      LoginPage(),
       ProfileMainPage(key: UniqueKey()),
       VideoComparePage(key: UniqueKey()),
-      LoginPage(),
     ];
   }
 
