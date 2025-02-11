@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/homepage.dart';
 import 'package:frontend/posts/club_posts_page.dart';
 import 'video_compare/video_compare.dart';
 import 'profile/profilemain.dart';
@@ -8,6 +9,7 @@ import 'login/login.dart';
 import 'user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,7 +53,7 @@ class MyApp extends StatelessWidget {
 		colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
 		useMaterial3: true,
 	  ),
-    home: MainScreen(),
+    home: LoginPage(),
 	  );
   }
 }
@@ -59,41 +61,57 @@ class MyApp extends StatelessWidget {
 class MainScreen extends StatefulWidget {
   @override
   _MainScreenState createState() => _MainScreenState();
+
+
 }
 
 class _MainScreenState extends State<MainScreen> {
-  PersistentTabController _controller = PersistentTabController(initialIndex: 0);
+    PersistentTabController _controller = PersistentTabController(initialIndex: 0);
+    String userEmail = "Loading..."; // Default value
 
-  // List all pages that need to be built here
-  List<Widget> _buildScreens() {
-    return [
-      LoginPage(),
-      ProfileMainPage(key: UniqueKey()),
-      VideoComparePage(key: UniqueKey()),
-    ];
-  }
+    @override
+    void initState() {
+        super.initState();
+        _loadUserEmail(); // Load email when screen initializes
+    }
+
+    Future<void> _loadUserEmail() async {
+        final prefs = await SharedPreferences.getInstance();
+        setState(() {
+        userEmail = prefs.getString('user_email') ?? "username not found";
+        });
+    }
+
+    // List all pages that need to be built here
+    List<Widget> _buildScreens() {
+        return [
+            HomePage(user_email: userEmail,),
+            ProfileMainPage(key: UniqueKey()),
+            VideoComparePage(key: UniqueKey()),
+        ];
+    }
 
   // Add all screens that can be navigated to here
   List<PersistentBottomNavBarItem> _navBarsItems() {
     return [
-      PersistentBottomNavBarItem(
-        icon: Icon(Icons.person),
-        title: "Profile",
-        activeColorPrimary: Colors.blue,
-        inactiveColorPrimary: Colors.grey,
-      ),
-      PersistentBottomNavBarItem(
-        icon: Icon(Icons.video_collection),
-        title: "Compare",
-        activeColorPrimary: Colors.blue,
-        inactiveColorPrimary: Colors.grey,
-      ),
-      PersistentBottomNavBarItem(
-        icon: Icon(Icons.login),
-        title: "Login",
-        activeColorPrimary: Colors.blue,
-        inactiveColorPrimary: Colors.grey,
-      ),
+        PersistentBottomNavBarItem(
+            icon: Icon(Icons.home),
+            title: "Home",
+            activeColorPrimary: Colors.blue,
+            inactiveColorPrimary: Colors.grey,
+        ),
+        PersistentBottomNavBarItem(
+            icon: Icon(Icons.person),
+            title: "Profile",
+            activeColorPrimary: Colors.blue,
+            inactiveColorPrimary: Colors.grey,
+        ),
+        PersistentBottomNavBarItem(
+            icon: Icon(Icons.video_collection),
+            title: "Compare",
+            activeColorPrimary: Colors.blue,
+            inactiveColorPrimary: Colors.grey,
+        ),
     ];
   }
 

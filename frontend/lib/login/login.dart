@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/main.dart';
 import '../homepage.dart';
 import 'signup.dart';
 import 'package:http/http.dart' as http;
@@ -56,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
                 final response = await http.post(
                     Uri.parse('$apiUrl/login'),
                     headers: {'Content-Type': 'application/json'},
-                    body: jsonEncode({'user_name': email, 'password': password}),
+                    body: jsonEncode({'username': email, 'password': password}),
                 );
                 if (!mounted) return; //maybe the user closed the app while this was running
 
@@ -72,7 +73,7 @@ class _LoginPageState extends State<LoginPage> {
                         if (!mounted) return;
                         Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (context) => HomePage(user_email: email)),
+                            MaterialPageRoute(builder: (context) => MainScreen()),
                         );
                     } else {
                         // Show error message from backend
