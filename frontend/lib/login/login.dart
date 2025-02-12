@@ -51,6 +51,7 @@ class _LoginPageState extends State<LoginPage> {
             final email = _emailController.text;
             final password = _passwordController.text;
             final apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
+            final user_id;
 
             // Simulate sending a request to the backend
             try {
@@ -64,11 +65,13 @@ class _LoginPageState extends State<LoginPage> {
                 if (response.statusCode == 200) {
                     final responseBody = jsonDecode(response.body);
                     if (responseBody['success'] == true) {
+                        user_id = responseBody["user_id"];
                         // Navigate to HomePage on successful login
 
                         //Save credentials one succesful login
                         final prefs = await SharedPreferences.getInstance();
                         await prefs.setString('user_email', email);
+                        await prefs.setInt('user_email', user_id);
 
                         if (!mounted) return;
                         Navigator.pushReplacement(

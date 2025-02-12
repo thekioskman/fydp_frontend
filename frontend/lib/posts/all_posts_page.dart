@@ -18,6 +18,7 @@ class _PostsPageState extends State<PostsPage> {
   bool _isLoading = false;
   bool _hasMore = true;
   String? _latestTimestamp;
+  int _user_id = -1;
 
   @override
   void initState() {
@@ -37,6 +38,7 @@ class _PostsPageState extends State<PostsPage> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _latestTimestamp = prefs.getString('latest_timestamp') ?? DateTime.now().toUtc().toIso8601String();
+      _user_id = prefs.getInt("user_id") ?? -1;
     });
     _fetchPosts();
   }
@@ -50,34 +52,35 @@ class _PostsPageState extends State<PostsPage> {
     });
 
     try {
-      final apiUrl = dotenv.env['API_URL'] ?? 'http://localhost:3000';
-      final response = await http.post(
-        Uri.parse('$apiUrl/posts'),
-        headers: {'Content-Type': 'application/json; charset=UTF-8'},
-        body: jsonEncode({'after': _latestTimestamp}),
-      );
+        final apiUrl = dotenv.env['API_URL'] ?? 'http://localhost:3000';
+        final response = await http.post(
+            Uri.parse('$apiUrl/posts'),
+            headers: {'Content-Type': 'application/json; charset=UTF-8'},
+            body: jsonEncode({'timestamp': _latestTimestamp, "user_id" : _user_id}),
+        );
 
-      if (response.statusCode == 200) {
-        final List<dynamic> decodedData = jsonDecode(response.body);
-        final List<Map<String, dynamic>> newPosts = decodedData.cast<Map<String, dynamic>>();
+        if (response.statusCode == 200) {
+            final List<dynamic> decodedData = jsonDecode(response.body);
+            final List<Map<String, dynamic>> newPosts = decodedData.cast<Map<String, dynamic>>();
 
-        setState(() {
-          if (newPosts.isNotEmpty) {
-            _posts.addAll(newPosts);
-            _latestTimestamp = newPosts.last['timestamp'];
+            setState(() {
+                if (newPosts.isNotEmpty) {
+                    _posts.addAll(newPosts);
+                    _latestTimestamp = newPosts.last['timestamp'];
 
-            // Save latest timestamp
-            SharedPreferences.getInstance().then((prefs) {
-              prefs.setString('latest_timestamp', _latestTimestamp!);
+                    // Save latest timestamp
+                    SharedPreferences.getInstance().then((prefs) {
+                    prefs.setString('latest_timestamp', _latestTimestamp!);
+                    });
+                } else {
+                    _hasMore = false;
+                }
+                _isLoading = false;
+            
             });
-          } else {
-            _hasMore = false;
-          }
-          _isLoading = false;
-        });
-      } else {
-        throw Exception('Failed to load posts');
-      }
+        } else {
+            throw Exception('Failed to load posts');
+        }
     } catch (e) {
       setState(() {
         _isLoading = false;
