@@ -25,81 +25,80 @@ class _PostsPageState extends State<PostsPage> {
     super.initState();
     _loadCachedTimestamp();
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent &&
-          !_isLoading &&
-          _hasMore) {
-        _fetchPosts();
-      }
-    });
-  }
-
-  /// **Load cached timestamp from SharedPreferences**
-  Future<void> _loadCachedTimestamp() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _latestTimestamp = prefs.getString('latest_timestamp') ?? DateTime.now().toUtc().toIso8601String();
-      _user_id = prefs.getInt("user_id") ?? -1;
-    });
-    _fetchPosts();
-  }
-
-  /// **Fetch posts from the API**
-  Future<void> _fetchPosts() async {
-    if (_isLoading || !_hasMore) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-        final apiUrl = dotenv.env['API_URL'] ?? 'http://localhost:3000';
-        final response = await http.post(
-            Uri.parse('$apiUrl/posts'),
-            headers: {'Content-Type': 'application/json; charset=UTF-8'},
-            body: jsonEncode({'timestamp': _latestTimestamp, "user_id" : _user_id}),
-        );
-
-        if (response.statusCode == 200) {
-            final List<dynamic> decodedData = jsonDecode(response.body);
-            final List<Map<String, dynamic>> newPosts = decodedData.cast<Map<String, dynamic>>();
-
-            setState(() {
-                if (newPosts.isNotEmpty) {
-                    _posts.addAll(newPosts);
-                    _latestTimestamp = newPosts.last['timestamp'];
-
-                    // Save latest timestamp
-                    SharedPreferences.getInstance().then((prefs) {
-                    prefs.setString('latest_timestamp', _latestTimestamp!);
-                    });
-                } else {
-                    _hasMore = false;
-                }
-                _isLoading = false;
-            
-            });
-        } else {
-            throw Exception('Failed to load posts');
+        if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent && !_isLoading && _hasMore) {
+            _fetchPosts();
         }
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
-    }
+    });
   }
+
+    /// **Load cached timestamp from SharedPreferences**
+    Future<void> _loadCachedTimestamp() async {
+        final prefs = await SharedPreferences.getInstance();
+        setState(() {
+            _latestTimestamp = prefs.getString('latest_timestamp') ?? DateTime.now().toUtc().toIso8601String();
+            _user_id = prefs.getInt("user_id") ?? -1;
+        });
+        _fetchPosts();
+    }
+
+    /// **Fetch posts from the API**
+    Future<void> _fetchPosts() async {
+        if (_isLoading || !_hasMore) return;
+
+        setState(() {
+        _isLoading = true;
+        });
+
+        try {
+            final apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
+            final response = await http.post(
+                Uri.parse('$apiUrl/posts'),
+                headers: {'Content-Type': 'application/json; charset=UTF-8'},
+                body: jsonEncode({'timestamp': _latestTimestamp, "user_id" : _user_id}),
+            );
+
+            if (response.statusCode == 200) {
+                final List<dynamic> decodedData = jsonDecode(response.body);
+                final List<Map<String, dynamic>> newPosts = decodedData.cast<Map<String, dynamic>>();
+
+                setState(() {
+                    if (newPosts.isNotEmpty) {
+                        _posts.addAll(newPosts);
+                        _latestTimestamp = newPosts.last['timestamp'];
+
+                        // Save latest timestamp
+                        SharedPreferences.getInstance().then((prefs) {
+                        prefs.setString('latest_timestamp', _latestTimestamp!);
+                        });
+                    } else {
+                        _hasMore = false;
+                    }
+                    
+                    _isLoading = false;
+                
+                });
+            } else {
+                throw Exception('Failed to load posts');
+            }
+        }catch(e){
+            setState(() {
+                _isLoading = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error: $e')),
+            );
+        }
+    } 
 
   /// **Format timestamp into a human-readable "Date Posted" string**
-  String _formatTimestamp(String timestamp) {
-    try {
-      DateTime date = DateTime.parse(timestamp).toLocal(); // Convert UTC to local
-      return DateFormat('MMM d, yyyy - hh:mm a').format(date); // Format date
-    } catch (e) {
-      return 'Invalid Date';
+    String _formatTimestamp(String timestamp) {
+        try {
+        DateTime date = DateTime.parse(timestamp).toLocal(); // Convert UTC to local
+        return DateFormat('MMM d, yyyy - hh:mm a').format(date); // Format date
+        } catch (e) {
+        return 'Invalid Date';
+        }
     }
-  }
 
   @override
   Widget build(BuildContext context) {
