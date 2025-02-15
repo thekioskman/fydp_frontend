@@ -40,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
             if (!mounted) return;
             Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => HomePage(user_email: storedEmail)),
+                MaterialPageRoute(builder: (context) =>  MainScreen()),
             );
         }
     }
@@ -71,7 +71,7 @@ class _LoginPageState extends State<LoginPage> {
                         //Save credentials one succesful login
                         final prefs = await SharedPreferences.getInstance();
                         await prefs.setString('user_email', email);
-                        await prefs.setInt('user_email', user_id);
+                        await prefs.setString('user_id', user_id.toString());
 
                         if (!mounted) return;
                         Navigator.pushReplacement(
@@ -86,8 +86,9 @@ class _LoginPageState extends State<LoginPage> {
                     }
                 } else {
                     // Handle server errors
+                    final responseBody = jsonDecode(response.body);
                     ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Server error. Please try again later.')),
+                      SnackBar(content: Text(responseBody["detail"] ?? "Server Error")),
                     );
                 }
             } catch (e) {
@@ -146,8 +147,6 @@ class _LoginPageState extends State<LoginPage> {
                 validator: (value) {
                     if (value == null || value.isEmpty) {
                         return 'Please enter your password';
-                    } else if (value.length < 6) {
-                        return 'Password must be at least 6 characters long';
                     }
                     return null;
                 },
