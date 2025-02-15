@@ -40,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
             if (!mounted) return;
             Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => HomePage(user_email: storedEmail)),
+                MaterialPageRoute(builder: (context) =>  MainScreen()),
             );
         }
     }
@@ -51,6 +51,7 @@ class _LoginPageState extends State<LoginPage> {
             final email = _emailController.text;
             final password = _passwordController.text;
             final apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
+            final user_id;
 
             // Simulate sending a request to the backend
             try {
@@ -64,11 +65,13 @@ class _LoginPageState extends State<LoginPage> {
                 if (response.statusCode == 200) {
                     final responseBody = jsonDecode(response.body);
                     if (responseBody['success'] == true) {
+                        user_id = responseBody["user_id"];
                         // Navigate to HomePage on successful login
 
                         //Save credentials one succesful login
                         final prefs = await SharedPreferences.getInstance();
                         await prefs.setString('user_email', email);
+                        await prefs.setString('user_id', user_id.toString());
 
                         if (!mounted) return;
                         Navigator.pushReplacement(
@@ -83,8 +86,9 @@ class _LoginPageState extends State<LoginPage> {
                     }
                 } else {
                     // Handle server errors
+                    final responseBody = jsonDecode(response.body);
                     ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Server error. Please try again later.')),
+                      SnackBar(content: Text(responseBody["detail"] ?? "Server Error")),
                     );
                 }
             } catch (e) {
@@ -143,8 +147,6 @@ class _LoginPageState extends State<LoginPage> {
                 validator: (value) {
                     if (value == null || value.isEmpty) {
                         return 'Please enter your password';
-                    } else if (value.length < 6) {
-                        return 'Password must be at least 6 characters long';
                     }
                     return null;
                 },

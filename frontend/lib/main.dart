@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/homepage.dart';
-import 'package:frontend/posts/club_posts_page.dart';
+import 'package:frontend/posts/all_posts_page.dart';
 import 'video_compare/video_compare.dart';
 import 'profile/profilemain.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart'; // https://pub.dev/packages/persistent_bottom_nav_bar
@@ -85,7 +85,7 @@ class _MainScreenState extends State<MainScreen> {
     // List all pages that need to be built here
     List<Widget> _buildScreens() {
         return [
-            HomePage(user_email: userEmail,),
+            PostsPage(),
             ProfileMainPage(key: UniqueKey()),
             VideoComparePage(key: UniqueKey()),
         ];
