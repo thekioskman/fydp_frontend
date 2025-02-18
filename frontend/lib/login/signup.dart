@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../homepage.dart';
+import 'package:frontend/posts/all_posts_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -51,7 +51,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         if (!mounted) return;
                         Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (context) => HomePage(user_email: email)),
+                            MaterialPageRoute(builder: (context) => PostsPage()),
                         );
                     } else {
                         // Show error message from backend

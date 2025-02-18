@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/main.dart';
-import '../homepage.dart';
 import 'signup.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -52,6 +51,8 @@ class _LoginPageState extends State<LoginPage> {
             final password = _passwordController.text;
             final apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
             final user_id;
+            final first_name;
+            final last_name;
 
             // Simulate sending a request to the backend
             try {
@@ -66,12 +67,16 @@ class _LoginPageState extends State<LoginPage> {
                     final responseBody = jsonDecode(response.body);
                     if (responseBody['success'] == true) {
                         user_id = responseBody["user_id"];
+                        first_name = responseBody["first_name"];
+                        last_name = responseBody["last_name"];
                         // Navigate to HomePage on successful login
 
                         //Save credentials one succesful login
                         final prefs = await SharedPreferences.getInstance();
                         await prefs.setString('user_email', email);
                         await prefs.setString('user_id', user_id.toString());
+                        await prefs.setString("first_name", first_name);
+                        await prefs.setString("last_name", last_name);
 
                         if (!mounted) return;
                         Navigator.pushReplacement(

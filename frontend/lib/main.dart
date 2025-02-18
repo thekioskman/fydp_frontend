@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/homepage.dart';
+
 import 'package:frontend/posts/all_posts_page.dart';
 import 'video_compare/video_compare.dart';
 import 'profile/profilemain.dart';
@@ -16,6 +16,10 @@ void main() async {
   final userProvider = UserProvider();
   await userProvider.loadUserId(); // Load user ID before app starts
   await dotenv.load();
+
+  //Uncomment if you want to clear the cookies
+  // final prefs = await SharedPreferences.getInstance();
+  // await prefs.clear();
 
 
   runApp(
@@ -50,7 +54,7 @@ class MyApp extends StatelessWidget {
 		//
 		// This works for code too, not just values: Most code changes can be
 		// tested with just a hot reload.
-		colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+		colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 245, 245, 245)),
 		useMaterial3: true,
 	  ),
     home: LoginPage(),
@@ -67,20 +71,13 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
     PersistentTabController _controller = PersistentTabController(initialIndex: 0);
-    String userEmail = "Loading..."; // Default value
+    
 
     @override
     void initState() {
         super.initState();
-        _loadUserEmail(); // Load email when screen initializes
     }
 
-    Future<void> _loadUserEmail() async {
-        final prefs = await SharedPreferences.getInstance();
-        setState(() {
-        userEmail = prefs.getString('user_email') ?? "username not found";
-        });
-    }
 
     // List all pages that need to be built here
     List<Widget> _buildScreens() {
