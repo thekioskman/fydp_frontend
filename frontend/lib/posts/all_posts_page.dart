@@ -7,6 +7,7 @@ import 'package:intl/intl.dart'; // For formatting timestamps
 import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/login/login.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart'; // https://pub.dev/packages/persistent_bottom_nav_bar
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class PostsPage extends StatefulWidget {
   const PostsPage({super.key});
@@ -22,11 +23,11 @@ class _PostsPageState extends State<PostsPage> {
   bool _hasMore = true;
   String? _latestTimestamp;
   int _user_id = -1;
+  String apiUrl = dotenv.env['IMAGE_ENDPOINT'] ?? "";
 
   @override
   void initState() {
     super.initState();
-    print("HERE?");
     _loadCachedTimestamp();
     _scrollController.addListener(() {
       if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent && !_isLoading && _hasMore) {
@@ -169,46 +170,62 @@ Widget build(BuildContext context) {
                 final post = _posts[index];
             
                 return Column(
-                    children: [
-                    Card(
-                        margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                            ListTile(
-                            title: Text("T", style: TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                Text(post['description']), // Updated to 'description'
-                                SizedBox(height: 5),
-                                Text(
-                                    'Created on: ${_formatTimestamp(post['created_on'])}', // Updated to 'created_on'
-                                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                                ),
-                                ],
-                            ),
-                            ),
-                            if (post['imageUrl'] != null)
-                            Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.network(
-                                    post['imageUrl'],
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                    height: 200,
-                                ),
-                                ),
-                            ),
-                        ],
+  children: [
+    Card(
+      margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            title: Text("T", style: TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(post['description']), // Updated to 'description'
+                SizedBox(height: 5),
+                Text(
+                  'Created on: ${_formatTimestamp(post['created_on'])}', // Updated to 'created_on'
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+                if (post['imageUrl'] != null)
+                    Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.network(
+                            '$apiUrl/${post['imageUrl']}',
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: 200,
                         ),
                     ),
+                    )
+                else
+                    Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.network(
+                            '$apiUrl/test_image1.png'
+                        ,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: 200,
+                        ),
+                    ),
+                    )
+                ],
+            ),
+            ),
+            ],
+        );
 
-                    ],
-                );
+
+
                 },
             );
         }
