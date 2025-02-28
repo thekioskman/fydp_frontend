@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../homepage.dart';
+import 'package:frontend/main.dart';
 import 'signup.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -39,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
             if (!mounted) return;
             Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => HomePage(user_email: storedEmail)),
+                MaterialPageRoute(builder: (context) =>  MainScreen()),
             );
         }
     }
@@ -50,29 +50,38 @@ class _LoginPageState extends State<LoginPage> {
             final email = _emailController.text;
             final password = _passwordController.text;
             final apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
+            final user_id;
+            final first_name;
+            final last_name;
 
             // Simulate sending a request to the backend
             try {
                 final response = await http.post(
                     Uri.parse('$apiUrl/login'),
                     headers: {'Content-Type': 'application/json'},
-                    body: jsonEncode({'user_name': email, 'password': password}),
+                    body: jsonEncode({'username': email, 'password': password}),
                 );
                 if (!mounted) return; //maybe the user closed the app while this was running
 
                 if (response.statusCode == 200) {
                     final responseBody = jsonDecode(response.body);
                     if (responseBody['success'] == true) {
+                        user_id = responseBody["user_id"];
+                        first_name = responseBody["first_name"];
+                        last_name = responseBody["last_name"];
                         // Navigate to HomePage on successful login
 
                         //Save credentials one succesful login
                         final prefs = await SharedPreferences.getInstance();
                         await prefs.setString('user_email', email);
+                        await prefs.setString('user_id', user_id.toString());
+                        await prefs.setString("first_name", first_name);
+                        await prefs.setString("last_name", last_name);
 
                         if (!mounted) return;
                         Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (context) => HomePage(user_email: email)),
+                            MaterialPageRoute(builder: (context) => MainScreen()),
                         );
                     } else {
                         // Show error message from backend
@@ -82,8 +91,9 @@ class _LoginPageState extends State<LoginPage> {
                     }
                 } else {
                     // Handle server errors
+                    final responseBody = jsonDecode(response.body);
                     ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Server error. Please try again later.')),
+                      SnackBar(content: Text(responseBody["detail"] ?? "Server Error")),
                     );
                 }
             } catch (e) {
@@ -125,9 +135,11 @@ class _LoginPageState extends State<LoginPage> {
                     validator: (value) {
                         if (value == null || value.isEmpty) {
                             return 'Please enter your email';
-                        } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                            return 'Please enter a valid email';
-                        }
+                        } 
+                        // TODO: keep email or nah?
+                        // else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                        //     return 'Please enter a valid email';
+                        // }
                         return null;
                     },
               ),
@@ -142,8 +154,6 @@ class _LoginPageState extends State<LoginPage> {
                 validator: (value) {
                     if (value == null || value.isEmpty) {
                         return 'Please enter your password';
-                    } else if (value.length < 6) {
-                        return 'Password must be at least 6 characters long';
                     }
                     return null;
                 },

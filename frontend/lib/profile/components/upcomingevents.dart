@@ -38,7 +38,7 @@ class _UpcomingEventsPageState extends State<UpcomingEventsPage> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ProfileMainPage()),
+                  MaterialPageRoute(builder: (context) => ProfileMainPage(profileUserId: 1,)), //TODO: change this!
                 );
               },
               child: Padding(

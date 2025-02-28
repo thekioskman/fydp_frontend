@@ -4,31 +4,42 @@ import 'followbutton.dart';
 import '../../club/club.dart';
 
 class ProfileTopPage extends StatefulWidget {
-  const ProfileTopPage({super.key});
+  final String profilePicUrl;
+  final String firstName;
+  final String lastName;
+  final String username;
+  final String bio;
+  final int friendsCount;
+  final int eventsAttendedCount;
+  final int totalTime;
+  final List<Club> clubs;
+  final bool isOwnProfile;
+
+  const ProfileTopPage({
+    super.key,
+    required this.profilePicUrl,
+    required this.firstName,
+    required this.lastName,
+    required this.username,
+    required this.bio,
+    required this.friendsCount,
+    required this.eventsAttendedCount,
+    required this.totalTime,
+    required this.clubs,
+    required this.isOwnProfile,
+  });
 
   @override
   _ProfileTopPageState createState() => _ProfileTopPageState();
 }
 
 class _ProfileTopPageState extends State<ProfileTopPage> {
-  final String profilePicUrl = 'https://newprofilepic.photo-cdn.net//assets/images/article/profile.jpg?90af0c8';
-  final String firstName = 'FirstName';
-  final String lastName = 'LastName';
-  final String username = 'username';
-  final String bio = 'This is a sample bio';
-  final int friendsCount = 315;
-  final int eventsAttendedCount = 132;
-  final int totalTime = 500; // Time in hours...?
-  // something about clubs here...?
   // TODO: replace with logic to get user's clubs -> need more details like club link, club colour, etc...
-  final List<Club> clubs = [
-    Club(name: 'UWHH', pageRoute: '/login'), 
-    Club(name: 'Origins', pageRoute: '/login', color: Colors.green), 
-    Club(name: 'HaebeatDanceCrew', pageRoute: '/login', color: Colors.yellow),
-  ]; 
-
-  // Personal profile vs. someone else's profile
-  final bool isOwnProfile = false;
+  // final List<Club> clubs = [
+  //   Club(name: 'UWHH', pageRoute: '/login'), 
+  //   Club(name: 'Origins', pageRoute: '/login', color: Colors.green), 
+  //   Club(name: 'HaebeatDanceCrew', pageRoute: '/login', color: Colors.yellow),
+  // ]; 
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +52,7 @@ class _ProfileTopPageState extends State<ProfileTopPage> {
             child: Center(
               child: CircleAvatar(
                 radius: 40,
-                backgroundImage: NetworkImage(profilePicUrl),
+                backgroundImage: NetworkImage(widget.profilePicUrl),
               ),
             ),
           ),
@@ -52,25 +63,25 @@ class _ProfileTopPageState extends State<ProfileTopPage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  '$firstName $lastName',
+                  '${widget.firstName} ${widget.lastName}',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 Text(
-                  '@$username',
+                  '@${widget.username}',
                   style: TextStyle(fontWeight: FontWeight.normal, fontSize: 14, fontStyle: FontStyle.italic),
                 ),
                 SizedBox(height: 8),
-                Text(bio),
+                Text(widget.bio),
               ],
             )
           ),
 
           // If another profile, show follow button else, no button here
           SizedBox(height: 10),
-          isOwnProfile ? const SizedBox.shrink() : SizedBox(
+          widget.isOwnProfile ? const SizedBox.shrink() : SizedBox(
             width: 200,
             height: 30,
-            child: FollowButton(currentUsername: username, profileUsername: "profileUsername"),
+            child: FollowButton(currentUsername: widget.username, profileUsername: "profileUsername"),
           ),
           SizedBox(height: 10),
           Divider(),
@@ -86,17 +97,17 @@ class _ProfileTopPageState extends State<ProfileTopPage> {
                     alignment: Alignment.centerRight, 
                     child: Padding(
                       padding: const EdgeInsets.only(right: 24.0),
-                      child: _buildStatColumn('Friends', friendsCount),
+                      child: _buildStatColumn('Friends', widget.friendsCount),
                     )
                   ),
                 ),
-                _buildStatColumn('Events Attended', eventsAttendedCount),
+                _buildStatColumn('Events Attended', widget.eventsAttendedCount),
                 Expanded(
                   child: Align(
                     alignment: Alignment.centerLeft, 
                     child: Padding(
                       padding: const EdgeInsets.only(left: 24.0),
-                      child: _buildStatColumn('Total Hours', totalTime),
+                      child: _buildStatColumn('Total Hours', widget.totalTime),
                     ),
                   ),
                 ),
@@ -115,7 +126,7 @@ class _ProfileTopPageState extends State<ProfileTopPage> {
                 Wrap(
                   spacing: 16,
                   runSpacing: 12, // Vertical space between rows of tags
-                  children: clubs.map((club) => ClubTag(clubName: club.name, clubPageRoute: club.pageRoute, clubColor: club.color)).toList(),
+                  children: widget.clubs.map((club) => ClubTag(clubName: club.name, clubPageRoute: club.pageRoute, clubColor: club.color)).toList(),
                 ),
               ],
             ),

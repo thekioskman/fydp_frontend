@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import 'package:frontend/posts/all_posts_page.dart';
 import 'video_compare/video_compare.dart';
 import 'profile/profilemain.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart'; // https://pub.dev/packages/persistent_bottom_nav_bar
@@ -6,12 +8,17 @@ import 'login/login.dart';
 import 'user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final userProvider = UserProvider();
   await userProvider.loadUserId(); // Load user ID before app starts
   await dotenv.load();
+
+  //Uncomment if you want to clear the cookies
+  // final prefs = await SharedPreferences.getInstance();
+  // await prefs.clear();
 
 
   runApp(
@@ -46,10 +53,10 @@ class MyApp extends StatelessWidget {
 		//
 		// This works for code too, not just values: Most code changes can be
 		// tested with just a hot reload.
-		colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+		colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 245, 245, 245)),
 		useMaterial3: true,
 	  ),
-    home: MainScreen(),
+    home: LoginPage(),
 	  );
   }
 }
@@ -59,41 +66,52 @@ class MainScreen extends StatefulWidget {
 
   @override
   _MainScreenState createState() => _MainScreenState();
+
+
 }
 
 class _MainScreenState extends State<MainScreen> {
-  final PersistentTabController _controller = PersistentTabController(initialIndex: 0);
+  PersistentTabController _controller = PersistentTabController(initialIndex: 0);
+    
+
+  @override
+  void initState() {
+      super.initState();
+  }
 
   // List all pages that need to be built here
   List<Widget> _buildScreens() {
-    return [
-      ProfileMainPage(key: UniqueKey()),
-      VideoComparePage(key: UniqueKey()),
-      LoginPage(),
-    ];
+    final userIdString = Provider.of<UserProvider>(context, listen: false).userId;
+    final int userId = int.tryParse(userIdString ?? "") ?? -1; // Ensures userId is always int
+
+      return [
+          PostsPage(),
+          ProfileMainPage(profileUserId: userId,),
+          VideoComparePage(key: UniqueKey()),
+      ];
   }
 
   // Add all screens that can be navigated to here
   List<PersistentBottomNavBarItem> _navBarsItems() {
     return [
-      PersistentBottomNavBarItem(
-        icon: Icon(Icons.person),
-        title: "Profile",
-        activeColorPrimary: Colors.blue,
-        inactiveColorPrimary: Colors.grey,
-      ),
-      PersistentBottomNavBarItem(
-        icon: Icon(Icons.video_collection),
-        title: "Compare",
-        activeColorPrimary: Colors.blue,
-        inactiveColorPrimary: Colors.grey,
-      ),
-      PersistentBottomNavBarItem(
-        icon: Icon(Icons.login),
-        title: "Login",
-        activeColorPrimary: Colors.blue,
-        inactiveColorPrimary: Colors.grey,
-      ),
+        PersistentBottomNavBarItem(
+            icon: Icon(Icons.home),
+            title: "Home",
+            activeColorPrimary: Colors.blue,
+            inactiveColorPrimary: Colors.grey,
+        ),
+        PersistentBottomNavBarItem(
+            icon: Icon(Icons.person),
+            title: "Profile",
+            activeColorPrimary: Colors.blue,
+            inactiveColorPrimary: Colors.grey,
+        ),
+        PersistentBottomNavBarItem(
+            icon: Icon(Icons.video_collection),
+            title: "Compare",
+            activeColorPrimary: Colors.blue,
+            inactiveColorPrimary: Colors.grey,
+        ),
     ];
   }
 
