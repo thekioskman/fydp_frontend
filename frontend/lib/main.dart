@@ -10,6 +10,7 @@ import 'user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'posts/upload_post.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,6 +84,7 @@ class _MainScreenState extends State<MainScreen> {
     List<Widget> _buildScreens() {
         return [
             PostsPage(),
+            UploadPostPage(),
             ProfileMainPage(key: UniqueKey()),
             VideoComparePage(key: UniqueKey()),
         ];
@@ -94,6 +96,12 @@ class _MainScreenState extends State<MainScreen> {
         PersistentBottomNavBarItem(
             icon: Icon(Icons.home),
             title: "Home",
+            activeColorPrimary: Colors.blue,
+            inactiveColorPrimary: Colors.grey,
+        ),
+        PersistentBottomNavBarItem(
+            icon: Icon(Icons.add_a_photo_outlined),
+            title: "Post",
             activeColorPrimary: Colors.blue,
             inactiveColorPrimary: Colors.grey,
         ),
