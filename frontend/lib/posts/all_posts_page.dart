@@ -23,7 +23,7 @@ class _PostsPageState extends State<PostsPage> {
   bool _hasMore = true;
   String? _latestTimestamp;
   int _user_id = -1;
-  String apiUrl = dotenv.env['IMAGE_ENDPOINT'] ?? "";
+  String s3Bucket = dotenv.env['IMAGE_ENDPOINT'] ?? "";
 
   @override
   void initState() {
@@ -78,8 +78,8 @@ class _PostsPageState extends State<PostsPage> {
             );
 
             if (response.statusCode == 200) {
-            final List<dynamic> decodedData = jsonDecode(response.body);
-            final List<Map<String, dynamic>> newPosts = decodedData.cast<Map<String, dynamic>>();
+              final List<dynamic> decodedData = jsonDecode(response.body);
+              final List<Map<String, dynamic>> newPosts = decodedData.cast<Map<String, dynamic>>();
 
             setState(() {
                 if (newPosts.isNotEmpty) {
@@ -178,7 +178,7 @@ Widget build(BuildContext context) {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ListTile(
-            title: Text("T", style: TextStyle(fontWeight: FontWeight.bold)),
+            title: Text(post['title'], style: TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -197,7 +197,7 @@ Widget build(BuildContext context) {
                     child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
                         child: Image.network(
-                            '$apiUrl/${post['imageUrl']}',
+                            '$s3Bucket/${post['imageUrl']}',
                         fit: BoxFit.cover,
                         width: double.infinity,
                         height: 200,
@@ -210,7 +210,7 @@ Widget build(BuildContext context) {
                     child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
                         child: Image.network(
-                            '$apiUrl/test_image1.png'
+                            '$s3Bucket/test_image1.png'
                         ,
                         fit: BoxFit.cover,
                         width: double.infinity,
