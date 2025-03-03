@@ -1,25 +1,29 @@
 import 'package:flutter/material.dart';
-import '../../login/login.dart'; // TODO: remove later
-
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart'; // https://pub.dev/packages/persistent_bottom_nav_bar
+import 'package:frontend/posts/all_posts_page.dart';
 
 class ClubTag extends StatelessWidget {
-  final String clubName;
+  final String clubTag;
   final String clubPageRoute; // Link to corresponding club page
   final Color? clubColor; // Optional club color parameter
 
   // Define a default internal color
   static const Color _defaultColor = Colors.blueAccent;
 
-  const ClubTag({super.key, required this.clubName, required this.clubPageRoute, this.clubColor});
+  const ClubTag({super.key, required this.clubTag, required this.clubPageRoute, this.clubColor});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
         // Navigate to the club page when tapped
-        Navigator.push(
+        // TODO: SHOULD GO TO CLUB PAGE FIX THIS??
+        PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
           context,
-          MaterialPageRoute(builder: (context) => LoginPage()) // TODO: fix this later with the club page, get club page by club name! -> might introduce club ID in future
+          settings: RouteSettings(name: clubPageRoute),
+          screen: PostsPage(),
+          withNavBar: true,
+          pageTransitionAnimation: PageTransitionAnimation.cupertino,
         );
       },
       child: Container(
@@ -38,7 +42,7 @@ class ClubTag extends StatelessWidget {
           ],
         ),
         child: Text(
-          '#$clubName',
+          '#$clubTag',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 14),
         ),
       ),

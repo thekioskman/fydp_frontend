@@ -34,13 +34,6 @@ class ProfileTopPage extends StatefulWidget {
 }
 
 class _ProfileTopPageState extends State<ProfileTopPage> {
-  // TODO: replace with logic to get user's clubs -> need more details like club link, club colour, etc...
-  // final List<Club> clubs = [
-  //   Club(name: 'UWHH', pageRoute: '/login'), 
-  //   Club(name: 'Origins', pageRoute: '/login', color: Colors.green), 
-  //   Club(name: 'HaebeatDanceCrew', pageRoute: '/login', color: Colors.yellow),
-  // ]; 
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -126,7 +119,7 @@ class _ProfileTopPageState extends State<ProfileTopPage> {
                 Wrap(
                   spacing: 16,
                   runSpacing: 12, // Vertical space between rows of tags
-                  children: widget.clubs.map((club) => ClubTag(clubName: club.name, clubPageRoute: club.pageRoute, clubColor: club.color)).toList(),
+                  children: widget.clubs.map((club) => ClubTag(clubTag: club.clubTag, clubPageRoute: club.pageRoute, clubColor: club.color)).toList(),
                 ),
               ],
             ),

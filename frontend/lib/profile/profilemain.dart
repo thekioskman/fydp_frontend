@@ -120,7 +120,7 @@ class _ProfileMainPageState extends State<ProfileMainPage> {
                 ),
                 UpcomingEventsPage(),
                 ActivitiesPage(),
-                // ProfileSectionPage(sectionName: "Sessions"),
+                ProfileSectionPage(sectionName: "Videos", userId: _user_id),
                 // ProfileSectionPage(sectionName: "Covers"),
                 SizedBox(height: 24.0)
               ],
