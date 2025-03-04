@@ -19,8 +19,8 @@ void main() async {
   await dotenv.load();
 
   //Uncomment if you want to clear the cookies
-  // final prefs = await SharedPreferences.getInstance();
-  // await prefs.clear();
+//   final prefs = await SharedPreferences.getInstance();
+//   await prefs.clear();
 
 
   runApp(

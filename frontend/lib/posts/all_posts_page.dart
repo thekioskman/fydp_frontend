@@ -72,9 +72,9 @@ class _PostsPageState extends State<PostsPage> {
         try {
             final apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
             final response = await http.post(
-            Uri.parse('$apiUrl/posts'),
-            headers: {'Content-Type': 'application/json; charset=UTF-8'},
-            body: jsonEncode({'timestamp': _latestTimestamp, "user_id": _user_id}),
+                Uri.parse('$apiUrl/posts'),
+                headers: {'Content-Type': 'application/json; charset=UTF-8'},
+                body: jsonEncode({'timestamp': _latestTimestamp, "user_id": _user_id}),
             );
 
             if (response.statusCode == 200) {
@@ -83,17 +83,17 @@ class _PostsPageState extends State<PostsPage> {
 
             setState(() {
                 if (newPosts.isNotEmpty) {
-                _posts.addAll(newPosts);  // Append new posts to the list
-                _latestTimestamp = newPosts.last['created_on'];  // Update the latest timestamp
+                    _posts.addAll(newPosts);  // Append new posts to the list
+                    _latestTimestamp = newPosts.last['created_on'];  // Update the latest timestamp
                 } else {
-                _hasMore = false;  // No more posts to fetch
+                    _hasMore = false;  // No more posts to fetch
                 }
 
                 print("Fetched ${newPosts.length} posts");
                 _isLoading = false;  // Stop the loading circle
             });
             } else {
-            throw Exception('Failed to load posts');
+                throw Exception('Failed to load posts');
             }
         } catch (e) {
             setState(() {
