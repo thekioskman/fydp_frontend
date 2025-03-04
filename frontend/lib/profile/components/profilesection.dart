@@ -1,5 +1,6 @@
 // This class is for any generic profile section (e.g. Session, Covers, etc. of the figma)
 import 'package:flutter/material.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import '../pages/profilevideosmain.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
@@ -19,7 +20,8 @@ class ProfileSectionPage extends StatefulWidget {
 }
 
 class _ProfileSectionPageState extends State<ProfileSectionPage> {
-  List<String> videoIDs = [];
+  List<String> topVideoIDs = [];
+  List<String> allVideoIDs = [];
   bool isLoading = true; // to track loading state
   bool hasError = false; // to track errors
   late List<YoutubePlayerController> _controllers;
@@ -59,19 +61,19 @@ class _ProfileSectionPageState extends State<ProfileSectionPage> {
             .where((id) => id.isNotEmpty) // Remove failed conversions
             .toList()
             .reversed // Reverse to get the newest videos first
-            .take(3) // Keep at most 3 videos
             .toList();
 
         setState(() {
-          videoIDs = validVideoIds;
-          _controllers = videoIDs.map((id) => YoutubePlayerController(
+          allVideoIDs = validVideoIds;
+          topVideoIDs = validVideoIds.take(3).toList();
+          _controllers = topVideoIDs.map((id) => YoutubePlayerController(
             initialVideoId: id,
             flags: YoutubePlayerFlags(autoPlay: false, mute: false),
           )).toList();
           isLoading = false;
         });
 
-        print("Fetched Video IDs: $videoIDs");
+        print("Fetched Top Video IDs: $topVideoIDs");
       } else {
         throw Exception('Failed to load videos: ${response.statusCode}');
       }
@@ -100,9 +102,14 @@ class _ProfileSectionPageState extends State<ProfileSectionPage> {
                 )),
             GestureDetector(
               onTap: () {
-                Navigator.pushReplacement(
+                PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
                   context,
-                  MaterialPageRoute(builder: (context) => ProfileVideosMainPage()),
+                  screen: ProfileVideosMainPage(
+                      sectionName: "Videos",
+                      videoIDs: allVideoIDs,
+                    ),
+                  settings: RouteSettings(name: "ProfileVideosMainPage"), // Define a route name
+                  pageTransitionAnimation: PageTransitionAnimation.cupertino,
                 );
               },
               child: Padding(
@@ -125,7 +132,7 @@ class _ProfileSectionPageState extends State<ProfileSectionPage> {
           Text("Failed to load videos", style: TextStyle(color: Colors.red)),
 
         // If no videos available, show "No videos for events yet!"
-        if (!isLoading && !hasError && videoIDs.isEmpty)
+        if (!isLoading && !hasError && topVideoIDs.isEmpty)
           Padding(
             padding: EdgeInsets.symmetric(vertical: 20),
             child: Center(
@@ -137,7 +144,7 @@ class _ProfileSectionPageState extends State<ProfileSectionPage> {
           ),
 
         // Carousel of Video Cards Here
-        if (!isLoading && !hasError && videoIDs.isNotEmpty) 
+        if (!isLoading && !hasError && topVideoIDs.isNotEmpty) 
           CarouselSlider(
             options: CarouselOptions(
               height: 250,

@@ -9,6 +9,7 @@ import 'user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'profile/pages/profilevideosmain.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -105,6 +106,9 @@ class _MainScreenState extends State<MainScreen> {
             title: "Profile",
             activeColorPrimary: Colors.blue,
             inactiveColorPrimary: Colors.grey,
+            routeAndNavigatorSettings: RouteAndNavigatorSettings(
+              initialRoute: "/",
+            )
         ),
         PersistentBottomNavBarItem(
             icon: Icon(Icons.video_collection),
