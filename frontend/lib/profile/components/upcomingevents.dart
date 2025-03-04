@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/profile/profilemain.dart';
+import 'package:frontend/profile/pages/upcomingeventsmain.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import '../../club/event.dart';
 import '../../login/login.dart'; // TODO: remove later
 import 'package:shared_preferences/shared_preferences.dart'; // For caching data
@@ -16,6 +17,7 @@ class UpcomingEventsPage extends StatefulWidget {
 }
 
 class _UpcomingEventsPageState extends State<UpcomingEventsPage> {
+  List<Event> allEvents = [];
   Event? mostRecentEvent; // Store upcoming event
   bool isLoading = true;
   bool hasError = false;
@@ -54,6 +56,7 @@ class _UpcomingEventsPageState extends State<UpcomingEventsPage> {
 
         if (futureEvents.isNotEmpty) {
           setState(() {
+            allEvents = futureEvents;
             mostRecentEvent = futureEvents.first; // Take the first valid upcoming event
           });
         } else {
@@ -101,9 +104,10 @@ class _UpcomingEventsPageState extends State<UpcomingEventsPage> {
                 )),
             GestureDetector(
               onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => ProfileMainPage(profileUserId: 1,)), //TODO: change this!
+                PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
+                  context, 
+                  screen: UpcomingEventsMainPage(events: allEvents), 
+                  settings: RouteSettings(name: "UpcomingEventsMainPage"), // Define a route name
                 );
               },
               child: Padding(
