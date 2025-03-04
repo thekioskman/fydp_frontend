@@ -51,9 +51,13 @@ class _PostsPageState extends State<PostsPage> {
         final prefs = await SharedPreferences.getInstance();
         await prefs.clear();
 
-        Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginPage()),  // Replace with your LoginPage widget
+        Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (BuildContext context) {
+              return LoginPage();
+            },
+          ),
+          (_) => false,
         );
     }
 

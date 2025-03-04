@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/main.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'signup.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -37,9 +38,12 @@ class _LoginPageState extends State<LoginPage> {
         if (storedEmail != null) {
             // Navigate to HomePage automatically
             if (!mounted) return;
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) =>  MainScreen()),
+            PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
+              context,
+              settings: RouteSettings(name: "MainScreen"),
+              screen: MainScreen(),
+              withNavBar: true,
+              pageTransitionAnimation: PageTransitionAnimation.cupertino,
             );
         }
     }
@@ -79,9 +83,12 @@ class _LoginPageState extends State<LoginPage> {
                         await prefs.setString("last_name", last_name);
 
                         if (!mounted) return;
-                        Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => MainScreen()),
+                        PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
+                          context,
+                          settings: RouteSettings(name: "MainScreen"),
+                          screen: MainScreen(),
+                          withNavBar: true,
+                          pageTransitionAnimation: PageTransitionAnimation.cupertino,
                         );
                     } else {
                         // Show error message from backend
