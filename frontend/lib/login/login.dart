@@ -32,16 +32,32 @@ class _LoginPageState extends State<LoginPage> {
 
     void _checkLoginStatus() async {
         final prefs = await SharedPreferences.getInstance();
-        final storedEmail = prefs.getString('user_email');
+        final user_id = prefs.getString('user_id');
+        final apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
 
-        if (storedEmail != null) {
+        final response = await http.get(Uri.parse('$apiUrl/user/$user_id'));
+
+        //Recheck the account exists
+        if (response.statusCode == 200) {
+          final responseBody = jsonDecode(response.body);
+          if (responseBody['success'] == true) {
             // Navigate to HomePage automatically
             if (!mounted) return;
             Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) =>  MainScreen()),
             );
+          }else{
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.clear();
+
+          }
+        }else{
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.clear();
         }
+
+        
     }
 
 
