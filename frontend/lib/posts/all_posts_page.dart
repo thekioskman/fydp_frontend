@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/login/login.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart'; // https://pub.dev/packages/persistent_bottom_nav_bar
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 
 class PostsPage extends StatefulWidget {
   const PostsPage({super.key});
@@ -74,12 +75,22 @@ class _PostsPageState extends State<PostsPage> {
             final response = await http.post(
                 Uri.parse('$apiUrl/posts'),
                 headers: {'Content-Type': 'application/json; charset=UTF-8'},
-                body: jsonEncode({'timestamp': _latestTimestamp, "user_id": _user_id}),
+                body: jsonEncode({'timestamp': DateTime.now().toUtc().subtract(Duration(days: 20)).toIso8601String(), "user_id": _user_id}),
             );
 
             if (response.statusCode == 200) {
               final List<dynamic> decodedData = jsonDecode(response.body);
               final List<Map<String, dynamic>> newPosts = decodedData.cast<Map<String, dynamic>>();
+
+                //need to build the string URL with the bucket_name, the type of post, and the list of comma seperateed image name strings
+                
+                for (Map<String, dynamic> post in newPosts) {
+                    if (post["picture_url"] != null) {
+                        post["picture_url"] = post["picture_url"].split(',').map((url) => url.trim()).toList();
+                        print(post["picture_url"]);
+                    }
+                   
+                }
 
             setState(() {
                 if (newPosts.isNotEmpty) {
@@ -171,56 +182,84 @@ Widget build(BuildContext context) {
             
                 return Column(
   children: [
-    Card(
+     Card(
       margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // User's name above the image
+          if (post['username'] != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text(
+                post['username'],
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ),
+
+          // Image or Carousel
+          if (post["pic_url"].isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: post["pic_url"].length > 1
+                  ? CarouselSlider(
+                      options: CarouselOptions(
+                        autoPlay: true,
+                        aspectRatio: 16 / 9,
+                        enlargeCenterPage: true,
+                      ),
+                      items: post["pic_url"].map((url) {
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.network(
+                            '$s3Bucket/${post['type']}/${post["id"]}-$url',
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: 200,
+                          ),
+                        );
+                      }).toList(),
+                    )
+                  : ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.network(
+                        '$s3Bucket/${post['type']}/${post["id"]}-${post["pic_url"][0]}',
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: 200,
+                      ),
+                    ),
+            ),
+
+          // Caption below the image
+          if (post['caption'] != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: Text(
+                post['caption'],
+                style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+              ),
+            ),
+
+          // Post title and description
           ListTile(
             title: Text(post['title'], style: TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(post['description']), // Updated to 'description'
+                Text(post['description']),
                 SizedBox(height: 5),
                 Text(
-                  'Created on: ${_formatTimestamp(post['created_on'])}', // Updated to 'created_on'
+                  'Created on: ${_formatTimestamp(post['created_on'])}',
                   style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
             ),
           ),
-                if (post['imageUrl'] != null)
-                    Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Image.network(
-                            '$s3Bucket/${post['imageUrl']}',
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: 200,
-                        ),
-                    ),
-                    )
-                else
-                    Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Image.network(
-                            '$s3Bucket/test_image1.png'
-                        ,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: 200,
-                        ),
-                    ),
-                    )
-                ],
-            ),
-            ),
+        ],
+      ),
+    ),
             ],
         );
 
