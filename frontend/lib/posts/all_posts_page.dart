@@ -24,6 +24,7 @@ class _PostsPageState extends State<PostsPage> {
   bool _hasMore = true;
   String? _latestTimestamp;
   int _user_id = -1;
+  String? _user_name;
   String s3Bucket = dotenv.env['IMAGE_ENDPOINT'] ?? "";
 
   @override
@@ -44,6 +45,7 @@ class _PostsPageState extends State<PostsPage> {
     setState(() {
       _latestTimestamp = prefs.getString('latest_timestamp') ?? DateTime.now().toUtc().subtract(Duration(days: 2)).toIso8601String();
       _user_id = int.tryParse(prefs.getString("user_id") ?? "") ?? -1;
+      _user_name = prefs.getString("user_email");
     });
     _fetchPosts();
   }
@@ -83,6 +85,7 @@ class _PostsPageState extends State<PostsPage> {
               final List<Map<String, dynamic>> newPosts = decodedData.cast<Map<String, dynamic>>();
 
                 //need to build the string URL with the bucket_name, the type of post, and the list of comma seperateed image name strings
+                print(newPosts);
                 
                 for (Map<String, dynamic> post in newPosts) {
                     if (post["picture_url"] != null) {
@@ -189,27 +192,27 @@ Widget build(BuildContext context) {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // User's name above the image
-          if (post['username'] != null)
+          if (_user_name != null)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Text(
-                post['username'],
+                _user_name ?? "",
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
             ),
 
           // Image or Carousel
-          if (post["pic_url"].isNotEmpty)
+          if (post["picture_url"].isNotEmpty)
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: post["pic_url"].length > 1
+              child: post["picture_url"].length > 1
                   ? CarouselSlider(
                       options: CarouselOptions(
                         autoPlay: true,
                         aspectRatio: 16 / 9,
                         enlargeCenterPage: true,
                       ),
-                      items: post["pic_url"].map((url) {
+                      items: post["picture_url"].map<Widget>((url) {
                         return ClipRRect(
                           borderRadius: BorderRadius.circular(10),
                           child: Image.network(
@@ -224,7 +227,7 @@ Widget build(BuildContext context) {
                   : ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: Image.network(
-                        '$s3Bucket/${post['type']}/${post["id"]}-${post["pic_url"][0]}',
+                        '$s3Bucket/${post['type']}/${post["id"]}-${post["picture_url"][0]}',
                         fit: BoxFit.cover,
                         width: double.infinity,
                         height: 200,
@@ -233,11 +236,11 @@ Widget build(BuildContext context) {
             ),
 
           // Caption below the image
-          if (post['caption'] != null)
+          if (post['description'] != null)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
               child: Text(
-                post['caption'],
+                post['description'],
                 style: TextStyle(fontSize: 14, color: Colors.grey[700]),
               ),
             ),
