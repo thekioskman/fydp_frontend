@@ -6,6 +6,7 @@ import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart'; // ht
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // For caching data
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'club_home_page.dart';
 
 class ClubsScreen extends StatefulWidget {
   const ClubsScreen({super.key});
@@ -87,14 +88,15 @@ Widget build(BuildContext context) {
       centerTitle: false,
       actions: [
         TextButton(
-            onPressed: () {
-                _createClub(context); // Call your logout function here
-            },
-            child: Text(
-                "Create Club",
-                style: TextStyle(color: Colors.black),),
-            ),
-        ],
+          onPressed: () {
+            _createClub(context); // Call your create club function here
+          },
+          child: Text(
+            "Create Club",
+            style: TextStyle(color: Colors.black),
+          ),
+        ),
+      ],
     ),
     body: isLoading
         ? Center(child: CircularProgressIndicator())
@@ -112,30 +114,41 @@ Widget build(BuildContext context) {
                 itemCount: clubs.length,
                 itemBuilder: (context, index) {
                   final club = clubs[index];
-                  return Card(
-                    elevation: 5,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "${club['name']!}",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                  return GestureDetector(
+                    onTap: () {
+                      // Navigate to the club's home page
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ClubHomePage(club: club),
+                        ),
+                      );
+                    },
+                    child: Card(
+                      elevation: 5,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "${club['name']!}",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            '#${club['club_tag']}',
-                            style: TextStyle(fontSize: 14),
-                          ),
-                        ],
+                            SizedBox(height: 8),
+                            Text(
+                              '#${club['club_tag']}',
+                              style: TextStyle(fontSize: 14),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );
