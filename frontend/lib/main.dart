@@ -4,7 +4,7 @@ import 'package:frontend/posts/all_posts_page.dart';
 import 'video_compare/video_compare.dart';
 import 'profile/profilemain.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart'; // https://pub.dev/packages/persistent_bottom_nav_bar
-import 'clubs/list_of_user_clubs.dart';
+import 'clubs/list_of_clubs.dart';
 import 'login/login.dart';
 import 'user_provider.dart';
 import 'package:provider/provider.dart';
@@ -84,6 +84,7 @@ class _MainScreenState extends State<MainScreen> {
     List<Widget> _buildScreens() {
         return [
             PostsPage(),
+            ClubsScreen(),
             UploadPostPage(),
             ProfileMainPage(key: UniqueKey()),
             VideoComparePage(key: UniqueKey()),
@@ -100,11 +101,18 @@ class _MainScreenState extends State<MainScreen> {
             inactiveColorPrimary: Colors.grey,
         ),
         PersistentBottomNavBarItem(
+            icon: Icon(Icons.book),
+            title: "Clubs",
+            activeColorPrimary: Colors.blue,
+            inactiveColorPrimary: Colors.grey,
+        ),
+        PersistentBottomNavBarItem(
             icon: Icon(Icons.add_a_photo_outlined),
             title: "Post",
             activeColorPrimary: Colors.blue,
             inactiveColorPrimary: Colors.grey,
         ),
+        
         PersistentBottomNavBarItem(
             icon: Icon(Icons.person),
             title: "Profile",

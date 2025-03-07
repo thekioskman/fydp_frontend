@@ -55,7 +55,7 @@ class _PostsPageState extends State<PostsPage> {
         await prefs.clear();
 
         Navigator.pushReplacement(
-        context,
+          context,
         MaterialPageRoute(builder: (context) => LoginPage()),  // Replace with your LoginPage widget
         );
     }
@@ -85,12 +85,11 @@ class _PostsPageState extends State<PostsPage> {
               final List<Map<String, dynamic>> newPosts = decodedData.cast<Map<String, dynamic>>();
 
                 //need to build the string URL with the bucket_name, the type of post, and the list of comma seperateed image name strings
-                print(newPosts);
+                //print(newPosts);
                 
                 for (Map<String, dynamic> post in newPosts) {
                     if (post["picture_url"] != null) {
                         post["picture_url"] = post["picture_url"].split(',').map((url) => url.trim()).toList();
-                        print(post["picture_url"]);
                     }
                    
                 }
