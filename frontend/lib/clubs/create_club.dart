@@ -18,6 +18,7 @@ class _CreateClubPageState extends State<CreateClubPage> {
   String _clubName = '';
   String _clubDescription = '';
   bool _isPrivate = false;
+  String _clubTag = '';
 
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
@@ -27,14 +28,8 @@ class _CreateClubPageState extends State<CreateClubPage> {
       final response = await http.post(
           Uri.parse('$apiUrl/club/new'),
           headers: {'Content-Type': 'application/json; charset=UTF-8'},
-          body: jsonEncode({'owner': widget.userId, "name": _clubName, "description" :_clubDescription, "club_tag" : ""}),
+          body: jsonEncode({'owner': widget.userId, "name": _clubName, "description" :_clubDescription, "club_tag" : _clubTag}),
       );
-
-      
-      print('User ID: ${widget.userId}');
-      print('Club Name: $_clubName');
-      print('Club Description: $_clubDescription');
-      print('Private: $_isPrivate');
       // Navigate back or show a success message
       Navigator.pop(context);
     }
@@ -66,6 +61,22 @@ class _CreateClubPageState extends State<CreateClubPage> {
                 },
                 onSaved: (value) {
                   _clubName = value!;
+                },
+              ),
+              SizedBox(height: 20),
+              TextFormField(
+                decoration: InputDecoration(
+                  labelText: 'Club Tag',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a club Tag';
+                  }
+                  return null;
+                },
+                onSaved: (value) {
+                  _clubTag = value!;
                 },
               ),
               SizedBox(height: 20),
