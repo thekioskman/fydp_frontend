@@ -4,10 +4,13 @@ import 'package:frontend/posts/all_posts_page.dart';
 import 'video_compare/video_compare.dart';
 import 'profile/profilemain.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart'; // https://pub.dev/packages/persistent_bottom_nav_bar
+import 'clubs/list_of_clubs.dart';
 import 'login/login.dart';
 import 'user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'posts/upload_post.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,8 +19,8 @@ void main() async {
   await dotenv.load();
 
   //Uncomment if you want to clear the cookies
-  // final prefs = await SharedPreferences.getInstance();
-  // await prefs.clear();
+//   final prefs = await SharedPreferences.getInstance();
+//   await prefs.clear();
 
 
   runApp(
@@ -69,11 +72,13 @@ class _MainScreenState extends State<MainScreen> {
     final userIdString = Provider.of<UserProvider>(context, listen: false).userId;
     final int userId = int.tryParse(userIdString ?? "") ?? -1; // Ensures userId is always int
 
-      return [
-          PostsPage(),
-          ProfileMainPage(profileUserId: userId,),
-          VideoComparePage(key: UniqueKey()),
-      ];
+    return [
+        PostsPage(),
+        ClubsScreen(),
+        UploadPostPage(),
+        ProfileMainPage(profileUserId: userId,),
+        VideoComparePage(key: UniqueKey()),
+    ];
   }
 
   // Add all screens that can be navigated to here
@@ -85,6 +90,19 @@ class _MainScreenState extends State<MainScreen> {
             activeColorPrimary: Colors.blue,
             inactiveColorPrimary: Colors.grey,
         ),
+        PersistentBottomNavBarItem(
+            icon: Icon(Icons.book),
+            title: "Clubs",
+            activeColorPrimary: Colors.blue,
+            inactiveColorPrimary: Colors.grey,
+        ),
+        PersistentBottomNavBarItem(
+            icon: Icon(Icons.add_a_photo_outlined),
+            title: "Post",
+            activeColorPrimary: Colors.blue,
+            inactiveColorPrimary: Colors.grey,
+        ),
+        
         PersistentBottomNavBarItem(
             icon: Icon(Icons.person),
             title: "Profile",
