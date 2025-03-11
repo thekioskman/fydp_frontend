@@ -6,6 +6,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SignUpPage extends StatefulWidget {
+  const SignUpPage({super.key});
+
     @override
     _SignUpPageState createState() => _SignUpPageState();
 }

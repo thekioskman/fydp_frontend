@@ -15,4 +15,15 @@ class Event {
     required this.location,
     required this.eventUrl,
   });
+
+  // Factory method to create an event from JSON
+  factory Event.fromJson(Map<String, dynamic> json) {
+    return Event(
+      eventName: json['title'] ?? 'Unknown Event',
+      date: json['date'] ?? 'Unknown Date',
+      time: json['time'] ?? 'Unknown Time',
+      location: json['location'] ?? 'Unknown Location',
+      eventUrl: '/', // Default to home
+    );
+  }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/main.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'signup.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -43,9 +44,12 @@ class _LoginPageState extends State<LoginPage> {
           if (responseBody['success'] == true) {
             // Navigate to HomePage automatically
             if (!mounted) return;
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) =>  MainScreen()),
+            PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
+              context,
+              settings: RouteSettings(name: "MainScreen"),
+              screen: MainScreen(),
+              withNavBar: true,
+              pageTransitionAnimation: PageTransitionAnimation.cupertino,
             );
           }else{
             final prefs = await SharedPreferences.getInstance();
@@ -95,9 +99,12 @@ class _LoginPageState extends State<LoginPage> {
                         await prefs.setString("last_name", last_name);
 
                         if (!mounted) return;
-                        Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => MainScreen()),
+                        PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
+                          context,
+                          settings: RouteSettings(name: "MainScreen"),
+                          screen: MainScreen(),
+                          withNavBar: true,
+                          pageTransitionAnimation: PageTransitionAnimation.cupertino,
                         );
                     } else {
                         // Show error message from backend
@@ -151,9 +158,11 @@ class _LoginPageState extends State<LoginPage> {
                     validator: (value) {
                         if (value == null || value.isEmpty) {
                             return 'Please enter your email';
-                        } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                            return 'Please enter a valid email';
-                        }
+                        } 
+                        // TODO: keep email or nah?
+                        // else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                        //     return 'Please enter a valid email';
+                        // }
                         return null;
                     },
               ),
