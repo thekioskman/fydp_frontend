@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class FollowButton extends StatefulWidget {
-  final String currentUsername; // Current profile's username
-  final String profileUsername; // Profile being viewed
+  final int currentUserId; // Current profile's username
+  final int profileUserId; // Profile being viewed
 
-  const FollowButton({super.key, required this.currentUsername, required this.profileUsername});
+  const FollowButton({super.key, required this.currentUserId, required this.profileUserId});
 
   @override
   _FollowButtonState createState() => _FollowButtonState();
@@ -21,18 +24,25 @@ class _FollowButtonState extends State<FollowButton> {
   }
 
   Future<void> _fetchFollowStatus() async {
-    try {
-      // API call to check if current user is following the profile
-      await Future.delayed(Duration(seconds: 1)); // Simulate API delay
-      bool fetchedStatus = await checkIfFollowing(
-        widget.currentUsername,
-        widget.profileUsername,
-      );
+    setState(() => isLoading = true);
 
-      setState(() {
-        isFollowing = fetchedStatus;
-        isLoading = false; // Hide loader after fetching
-      });
+    try {
+      final apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
+      final response = await http.get(Uri.parse('$apiUrl/followings/${widget.currentUserId}'));
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> followings = data['followings'] ?? [];
+
+        bool follows = followings.any((user) => user['id'] == widget.profileUserId);
+
+        setState(() {
+          isFollowing = follows;
+          isLoading = false;
+        });
+      } else {
+        throw Exception("Failed to fetch follow status");
+      }
     } catch (e) {
       print("Error fetching follow status: $e");
       setState(() {
@@ -44,18 +54,26 @@ class _FollowButtonState extends State<FollowButton> {
   Future<void> _toggleFollow() async {
     setState(() => isFollowing = !isFollowing); // Optimistic update
 
-    try {
-      // API call to toggle follow status
-      await Future.delayed(Duration(milliseconds: 500));
+    final apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
+    final url = isFollowing ? '$apiUrl/follow' : '$apiUrl/unfollow';
+    final reqBody = jsonEncode({
+                      "follower_id": widget.currentUserId,
+                      "following_id": widget.profileUserId
+                    });
 
-      bool success = await updateFollowStatus(
-        widget.currentUsername,
-        widget.profileUsername,
-        isFollowing,
-      );
-      if (!success) {
-        setState(() => isFollowing = !isFollowing); // Revert if API fails
-      }
+    try {
+      final response = await (isFollowing
+          ? http.post( // Use POST for follow
+              Uri.parse(url),
+              headers: {'Content-Type': 'application/json'},
+              body: reqBody
+            )
+          : http.delete( // Use DELETE for unfollow
+              Uri.parse(url),
+              headers: {'Content-Type': 'application/json'},
+              body: reqBody
+            )
+        );
     } catch (e) {
       print("Error updating follow status: $e");
       setState(() => isFollowing = !isFollowing); // Revert if error
@@ -93,16 +111,3 @@ class _FollowButtonState extends State<FollowButton> {
     );
   }
 }
-
-// 🔹 Dummy API Functions (Replace with actual backend calls)
-Future<bool> checkIfFollowing(String currentUsername, String profileUsername) async {
-  // Simulate backend check (replace with actual API call)
-  return Future.value(false); // Example condition, for now, always start with user NOT following this user
-}
-
-Future<bool> updateFollowStatus(String currentUsername, String profileUsername, bool isFollowing) async {
-  // Simulate backend update (replace with actual API call)
-  print("${isFollowing ? "Following" : "Unfollowing"} $profileUsername by $currentUsername");
-  return Future.value(true); // Simulate success
-}
-

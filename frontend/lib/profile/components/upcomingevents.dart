@@ -10,13 +10,15 @@ import 'dart:convert'; // For decoding JSON
 import 'package:intl/intl.dart';
 
 class UpcomingEventsPage extends StatefulWidget {
-  const UpcomingEventsPage({super.key});
+  final int userId;
+
+  const UpcomingEventsPage({super.key, required this.userId});
 
   @override
-  _UpcomingEventsPageState createState() => _UpcomingEventsPageState();
+  UpcomingEventsPageState createState() => UpcomingEventsPageState();
 }
 
-class _UpcomingEventsPageState extends State<UpcomingEventsPage> {
+class UpcomingEventsPageState extends State<UpcomingEventsPage> {
   List<Event> allEvents = [];
   Event? mostRecentEvent; // Store upcoming event
   bool isLoading = true;
@@ -25,18 +27,17 @@ class _UpcomingEventsPageState extends State<UpcomingEventsPage> {
   @override
   void initState() {
     super.initState();
-    _fetchUpcomingEvent();
+    fetchUpcomingEvent();
   }
 
   /// **Fetch User's Interested Events and Get the Most Upcoming Event**
-  Future<void> _fetchUpcomingEvent() async {
+  Future<void> fetchUpcomingEvent() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final int userId = int.tryParse(prefs.getString("user_id") ?? "") ?? -1;
-      if (userId == -1) throw Exception("Invalid user ID");
+      if (widget.userId == -1) throw Exception("Invalid user ID");
 
       final apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
-      final response = await http.get(Uri.parse('$apiUrl/user/$userId/interested'));
+      final response = await http.get(Uri.parse('$apiUrl/user/${widget.userId}/interested'));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

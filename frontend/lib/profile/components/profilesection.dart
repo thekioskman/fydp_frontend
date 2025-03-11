@@ -16,10 +16,10 @@ class ProfileSectionPage extends StatefulWidget {
   const ProfileSectionPage({super.key, required this.sectionName, required this.userId});
 
   @override
-  _ProfileSectionPageState createState() => _ProfileSectionPageState();
+  ProfileSectionPageState createState() => ProfileSectionPageState();
 }
 
-class _ProfileSectionPageState extends State<ProfileSectionPage> {
+class ProfileSectionPageState extends State<ProfileSectionPage> {
   List<String> topVideoIDs = [];
   List<String> allVideoIDs = [];
   bool isLoading = true; // to track loading state

@@ -19,6 +19,10 @@ class ProfileMainPage extends StatefulWidget {
 }
 
 class _ProfileMainPageState extends State<ProfileMainPage> {
+  // Keys to access sub widgets of the main page
+  final GlobalKey<ProfileSectionPageState> _profileSectionKey = GlobalKey();
+  final GlobalKey<UpcomingEventsPageState> _upcomingEventsPageKey = GlobalKey();
+
   String? _latestTimestamp;
   int _user_id = -1;
   bool _isLoading = true;
@@ -38,7 +42,17 @@ class _ProfileMainPageState extends State<ProfileMainPage> {
   @override
   void initState() {
     super.initState();
-    _loadCachedUserData();
+    _loadCachedUserData(); // Ensure fresh data when the page appears
+  }
+
+  Future<void> _refreshProfile() async {
+    await _fetchUserData(); // Fetch user data
+
+    // Call fetchVideos() in ProfileSectionPage
+    _profileSectionKey.currentState?.fetchVideos();
+
+    // Call fetchUpcomingEvent() in UpcomingEventsPage
+    _upcomingEventsPageKey.currentState?.fetchUpcomingEvent();
   }
 
   /// **Load cached timestamp & user ID from SharedPreferences**
@@ -59,7 +73,7 @@ class _ProfileMainPageState extends State<ProfileMainPage> {
       final apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
       
       // Fetch user info
-      final userResponse = await http.get(Uri.parse('$apiUrl/user/$_user_id'));
+      final userResponse = await http.get(Uri.parse('$apiUrl/user/${widget.profileUserId}'));
       if (userResponse.statusCode != 200) throw Exception('Failed to load user data');
       final userData = jsonDecode(userResponse.body)['user'];
 
@@ -67,7 +81,7 @@ class _ProfileMainPageState extends State<ProfileMainPage> {
       print('Fetched User Data: $userData');
 
       // Fetch user's clubs
-      final clubsResponse = await http.get(Uri.parse('$apiUrl/user/$_user_id/clubs'));
+      final clubsResponse = await http.get(Uri.parse('$apiUrl/user/${widget.profileUserId}/clubs'));
       if (clubsResponse.statusCode != 200) throw Exception('Failed to load clubs');
 
       final List<dynamic> clubData = jsonDecode(clubsResponse.body)['clubs'];
@@ -111,11 +125,13 @@ class _ProfileMainPageState extends State<ProfileMainPage> {
           : _hasError
             ? Center(child: Text("Failed to load profile", style: TextStyle(color: Colors.red)))
             : RefreshIndicator(
-              onRefresh: _fetchUserData,
+              onRefresh: _refreshProfile,
               child: ListView(
                 padding: EdgeInsets.zero,
                 children: [
                   ProfileTopPage(
+                    currentUserId: _user_id,
+                    profileUserId: widget.profileUserId,
                     profilePicUrl: profilePicUrl,
                     firstName: firstName,
                     lastName: lastName,
@@ -128,9 +144,9 @@ class _ProfileMainPageState extends State<ProfileMainPage> {
                     clubs: clubs,
                     isOwnProfile: _user_id == widget.profileUserId,
                   ),
-                  UpcomingEventsPage(),
+                  UpcomingEventsPage(key: _upcomingEventsPageKey, userId: widget.profileUserId,),
                   ActivitiesPage(),
-                  ProfileSectionPage(sectionName: "Videos", userId: _user_id),
+                  ProfileSectionPage(key: _profileSectionKey, sectionName: "Videos", userId: widget.profileUserId),
                   // ProfileSectionPage(sectionName: "Covers"),
                   SizedBox(height: 24.0)
                 ],
