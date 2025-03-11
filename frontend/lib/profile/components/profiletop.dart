@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/profile/components/userslist.dart';
+import 'package:frontend/profile/profilemain.dart';
 import 'clubtag.dart';
 import 'followbutton.dart';
 import '../../club/club.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
 class ProfileTopPage extends StatelessWidget {
+  final int currentUserId; // Logged in user
+  final int profileUserId; // Profile page currently being viewed
   final String profilePicUrl;
   final String firstName;
   final String lastName;
@@ -18,6 +23,8 @@ class ProfileTopPage extends StatelessWidget {
 
   const ProfileTopPage({
     super.key,
+    required this.currentUserId,
+    required this.profileUserId,
     required this.profilePicUrl,
     required this.firstName,
     required this.lastName,
@@ -72,8 +79,8 @@ class ProfileTopPage extends StatelessWidget {
                 width: 200,
                 height: 30,
                 child: FollowButton(
-                    currentUsername: username,
-                    profileUsername: "profileUsername"),
+                    currentUserId: currentUserId,
+                    profileUserId: profileUserId),
               ),
         SizedBox(height: 10),
         Divider(),
@@ -82,8 +89,26 @@ class ProfileTopPage extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildStatColumn('Followers', followersCount),
-              _buildStatColumn('Following', followingCount),
+              GestureDetector(
+                onTap: () {
+                  PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
+                    context, 
+                    screen: UserListPage(userId: profileUserId, listType: "followers"), 
+                    settings: RouteSettings(name: "FollowersListPage"), // Define a route name
+                  );
+                },
+                child: _buildStatColumn('Followers', followersCount),
+              ),
+              GestureDetector(
+                onTap: () {
+                  PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
+                    context, 
+                    screen: UserListPage(userId: profileUserId, listType: "followings"), 
+                    settings: RouteSettings(name: "FollowingListPage"), // Define a route name
+                  );
+                },
+                child: _buildStatColumn('Following', followingCount),
+              ),
               _buildStatColumn('Events', eventsAttendedCount),
               _buildStatColumn('Total Hours', totalTime),
             ],
