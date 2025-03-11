@@ -29,9 +29,10 @@ class _ProfileMainPageState extends State<ProfileMainPage> {
   String lastName = '';
   String username = '';
   String bio = '';
-  int friendsCount = 0;
+  int followersCount = 0;
+  int followingCount = 0;
   int eventsAttendedCount = 0;
-  int totalTime = 0; // Time in hours...?
+  double totalTime = 0; // Time in hours...?
   List<Club> clubs = []; 
 
   @override
@@ -62,6 +63,9 @@ class _ProfileMainPageState extends State<ProfileMainPage> {
       if (userResponse.statusCode != 200) throw Exception('Failed to load user data');
       final userData = jsonDecode(userResponse.body)['user'];
 
+      // Print userData for debugging
+      print('Fetched User Data: $userData');
+
       // Fetch user's clubs
       final clubsResponse = await http.get(Uri.parse('$apiUrl/user/$_user_id/clubs'));
       if (clubsResponse.statusCode != 200) throw Exception('Failed to load clubs');
@@ -75,9 +79,12 @@ class _ProfileMainPageState extends State<ProfileMainPage> {
         lastName = userData['last_name'] ?? '';
         username = userData['username'] ?? 'unknown_user';
         bio = userData['bio'] ?? 'This is a sample bio';
-        friendsCount = userData['friends_count'] ?? 0;
-        eventsAttendedCount = userData['events_attended'] ?? 0;
-        totalTime = userData['total_time'] ?? 0;
+        followersCount = userData['followers'] ?? 0;
+        followingCount = userData['following'] ?? 0;
+        eventsAttendedCount = userData['sessions_attended'] ?? 0;
+        // Convert totalTime from minutes to hours with one decimal place
+        totalTime = ((userData['total_dance_time'] ?? 0) / 60).toDouble();
+        totalTime = double.parse(totalTime.toStringAsFixed(1));
         clubs = clubData.map((clubJson) => Club.fromJson(clubJson)).toList();
         
         _isLoading = false;
@@ -103,28 +110,31 @@ class _ProfileMainPageState extends State<ProfileMainPage> {
           ? Center(child: CircularProgressIndicator())
           : _hasError
             ? Center(child: Text("Failed to load profile", style: TextStyle(color: Colors.red)))
-            : SingleChildScrollView(
-              child: Column(
-              children: [
-                ProfileTopPage(
-                  profilePicUrl: profilePicUrl,
-                  firstName: firstName,
-                  lastName: lastName,
-                  username: username,
-                  bio: bio,
-                  friendsCount: friendsCount,
-                  eventsAttendedCount: eventsAttendedCount,
-                  totalTime: totalTime,
-                  clubs: clubs,
-                  isOwnProfile: _user_id == widget.profileUserId,
-                ),
-                UpcomingEventsPage(),
-                ActivitiesPage(),
-                ProfileSectionPage(sectionName: "Videos", userId: _user_id),
-                // ProfileSectionPage(sectionName: "Covers"),
-                SizedBox(height: 24.0)
-              ],
-            ),
+            : RefreshIndicator(
+              onRefresh: _fetchUserData,
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  ProfileTopPage(
+                    profilePicUrl: profilePicUrl,
+                    firstName: firstName,
+                    lastName: lastName,
+                    username: username,
+                    bio: bio,
+                    followersCount: followersCount,
+                    followingCount: followingCount,
+                    eventsAttendedCount: eventsAttendedCount,
+                    totalTime: totalTime,
+                    clubs: clubs,
+                    isOwnProfile: _user_id == widget.profileUserId,
+                  ),
+                  UpcomingEventsPage(),
+                  ActivitiesPage(),
+                  ProfileSectionPage(sectionName: "Videos", userId: _user_id),
+                  // ProfileSectionPage(sectionName: "Covers"),
+                  SizedBox(height: 24.0)
+                ],
+              )
             ),
     );
   }
