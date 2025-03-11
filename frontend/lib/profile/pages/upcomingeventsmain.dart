@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../club/event.dart';
+import '../../clubs/event.dart';
 import 'package:intl/intl.dart';
 
 class UpcomingEventsMainPage extends StatefulWidget {

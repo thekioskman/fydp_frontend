@@ -7,6 +7,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // For caching data
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'club_home_page.dart';
+import 'club.dart';
 
 class ClubsScreen extends StatefulWidget {
   const ClubsScreen({super.key});
@@ -16,7 +17,7 @@ class ClubsScreen extends StatefulWidget {
 }
 
 class _ClubsScreenState extends State<ClubsScreen> {
-  List<Map<String, dynamic>> clubs = [];
+  List<Club> clubs = [];
   bool isLoading = true;
   bool hasError = false;
   String? user_id;
@@ -43,18 +44,25 @@ class _ClubsScreenState extends State<ClubsScreen> {
     try {
       final apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
       final response = await http.get(
-        Uri.parse('$apiUrl/clubs/$user_id'), // Replace with your API URL
+        Uri.parse('$apiUrl/user/$user_id/clubs'), 
       );
 
       if (response.statusCode == 200) {
-        print("OK response");
-        final List<dynamic> decodedData = jsonDecode(response.body);
-        print(decodedData);      
+        final List<dynamic> allClubs = jsonDecode(response.body)['clubs'] ?? [];
+
+        // Filter out only clubs where the logged-in user is the owner
+        final List<Club> ownedClubs = allClubs
+          .where((club) => club['owner_id'].toString() == user_id)
+          .map((clubData) => Club.fromJson(clubData)) // Convert JSON to Club object
+          .toList();
+
         setState(() {
-          clubs = decodedData.cast<Map<String, dynamic>>();
+          clubs = ownedClubs;
           isLoading = false;
           hasError = false;
         });
+
+        print("Owned Clubs: $ownedClubs"); // Debugging
       } else {
         setState(() {
           hasError = true;
@@ -117,11 +125,9 @@ Widget build(BuildContext context) {
                   return GestureDetector(
                     onTap: () {
                       // Navigate to the club's home page
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ClubHomePage(club: club),
-                        ),
+                      PersistentNavBarNavigator.pushNewScreen(
+                        context, 
+                        screen: ClubHomePage(club: club), 
                       );
                     },
                     child: Card(
@@ -136,7 +142,7 @@ Widget build(BuildContext context) {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "${club['name']!}",
+                              club.name,
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -144,7 +150,7 @@ Widget build(BuildContext context) {
                             ),
                             SizedBox(height: 8),
                             Text(
-                              '#${club['club_tag']}',
+                              '#${club.clubTag}',
                               style: TextStyle(fontSize: 14),
                             ),
                           ],
