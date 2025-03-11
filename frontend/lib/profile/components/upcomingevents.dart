@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/profile/pages/upcomingeventsmain.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
-import '../../club/event.dart';
+import '../../clubs/event.dart';
 import '../../login/login.dart'; // TODO: remove later
 import 'package:shared_preferences/shared_preferences.dart'; // For caching data
 import 'package:flutter_dotenv/flutter_dotenv.dart';

@@ -3,7 +3,7 @@ import 'package:frontend/profile/components/userslist.dart';
 import 'package:frontend/profile/profilemain.dart';
 import 'clubtag.dart';
 import 'followbutton.dart';
-import '../../club/club.dart';
+import '../../clubs/club.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
 class ProfileTopPage extends StatelessWidget {
@@ -129,8 +129,7 @@ class ProfileTopPage extends StatelessWidget {
                   runSpacing: 12,
                   children: clubs
                       .map((club) => ClubTag(
-                            clubTag: club.clubTag,
-                            clubPageRoute: club.pageRoute,
+                            club: club,
                             clubColor: club.color,
                           ))
                       .toList(),

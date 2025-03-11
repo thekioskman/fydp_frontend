@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'club.dart';
 
 class ClubHomePage extends StatelessWidget {
-  final Map<String, dynamic> club;
+  final Club club;
 
   ClubHomePage({required this.club});
 
@@ -9,7 +10,7 @@ class ClubHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(club['name'] ?? 'Club Home'),
+        title: Text(club.name ?? 'Club Home'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -17,17 +18,17 @@ class ClubHomePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Club Name: ${club['name']}",
+              "Club Name: ${club.name}",
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 16),
             Text(
-              "Club Tag: #${club['club_tag']}",
+              "Club Tag: #${club.clubTag}",
               style: TextStyle(fontSize: 18),
             ),
             SizedBox(height: 16),
             Text(
-              "Description: ${club['description']}",
+              "Description: ${club.description}",
               style: TextStyle(fontSize: 16),
             ),
             // Add more details or functionality as needed

@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart'; // For caching data
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http; // For HTTP requests
 import 'dart:convert'; // For decoding JSON
-import '../../club/club.dart';
+import '../clubs/club.dart';
 
 class ProfileMainPage extends StatefulWidget {
   final int profileUserId; // Allows viewing another user's profile
