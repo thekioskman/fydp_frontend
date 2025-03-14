@@ -10,6 +10,10 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:frontend/clubs/create_event.dart';
 import 'package:frontend/clubs/event.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http; // For HTTP requests
+import 'dart:convert'; // For decoding JSON
+import 'package:shared_preferences/shared_preferences.dart'; // For caching data
 
 class ClubHomePage extends StatefulWidget {
   final Club club;
@@ -26,6 +30,8 @@ class _ClubHomePageState extends State<ClubHomePage> {
   bool isOwner = false;
 
   // More club details
+  String? _latestTimestamp;
+  int _userId = -1; // Logged in user
   int membersCount = 0;
   int eventsCount = 0;
 
@@ -37,7 +43,8 @@ class _ClubHomePageState extends State<ClubHomePage> {
   late List<YoutubePlayerController> _controllers;
 
   // Events Section
-  List<Event> events = [];
+  Event? mostRecentEvent;
+  List<Event> allEvents = [];
 
   // Only used if isOwner is false
   bool isMember = false;
@@ -49,44 +56,192 @@ class _ClubHomePageState extends State<ClubHomePage> {
   }
 
   Future<void> _refreshClub() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _latestTimestamp = prefs.getString('latest_timestamp') ??
+          DateTime.now().toUtc().subtract(Duration(days: 2)).toIso8601String();
+      _userId = int.tryParse(prefs.getString("user_id") ?? "") ?? -1;
+    });
+
+    _fetchClubMembers();
+
+    _fetchClubDetails();
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    _fetchEventsAndVideos();
+  }
+
+  Future<void> _fetchFollowStatus() async {
     try {
-      // update video load...?
-      // update number of followers
-      // update number of events held
-      // update list of events
-      // In non-owner view
-      setState(() {
-        _isLoading = false;
-      });
+      // Check if user is already member of the club or not
+      final apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
+      final response = await http.get(Uri.parse('$apiUrl/user/$_userId/clubs'));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (data.containsKey("clubs")) {
+          final List<dynamic> clubs = data["clubs"];
+
+          // Check if the user follows the current club
+          for (var club in clubs) {
+            if (club["id"] == widget.club.id) {
+              setState(() => isMember = true);
+              break;
+            }
+          }
+        }
+        
+      } else {
+        throw Exception("Failed to club details (status: ${response.statusCode})");
+      }
     } catch (e) {
       setState(() {
         _hasError = true;
         _isLoading = false;
       });
     }
-
-    _fetchVideos();
   }
 
-  Future<void> _toggleJoin() async {
-    setState(() => isMember = !isMember);
-  }
-
-  Future<void> _fetchVideos() async {
+  Future<void> _fetchClubDetails() async {
     try {
-      // update video load...?
-      // update number of followers
-      // update number of events held
-      // update list of events
-      // In non-owner view
+      // Check if owner --> if not, check if member
+      final apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
+      final response = await http.get(Uri.parse('$apiUrl/club/${widget.club.id}'));
+
+      if (response.statusCode == 200) {
+        final int ownerId = jsonDecode(response.body)['owner'] ?? -1;
+
+        if (ownerId == _userId) {
+          setState(() {
+            isOwner = true;
+          });
+        } else {
+          _fetchFollowStatus();
+        }
+        
+      } else {
+        throw Exception("Failed to club details (status: ${response.statusCode})");
+      }
+    } catch (e) {
       setState(() {
-        _isVideosLoading = false;
+        _hasError = true;
+        _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _fetchClubMembers() async {
+    try {
+      // update number of followers
+      final apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
+      final response = await http.get(Uri.parse('$apiUrl/club/${widget.club.id}/members'));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> memberList = jsonDecode(response.body)['members'] ?? [];
+
+        setState(() {
+          membersCount = memberList.length;
+        });
+      } else {
+        throw Exception("Failed to club details (status: ${response.statusCode})");
+      }
+    } catch (e) {
+      setState(() {
+        _hasError = true;
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _fetchEventsAndVideos() async {
+    try {
+      final apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
+      final Map<String, dynamic> requestBody = {
+        "club_id": widget.club.id, // Replace with dynamic user ID if needed
+        "timestamp": "1970-01-01T00:00:00Z" // Fetch all videos of all time
+      };
+      final response = await http.post(
+        Uri.parse('$apiUrl/club/events'),
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+        body: jsonEncode(requestBody),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+
+        if (!data.containsKey("events") || data["events"] == null) {
+          throw Exception("No 'events' key in response.");
+        }
+
+        final List<dynamic> events = data["events"];
+
+        // The following is to get upcoming events
+        final List<Event> parsedEvents = events
+          .map((event) => Event.fromJson(event))
+          .toList()
+          ..sort((a, b) => DateTime.parse(b.date).compareTo(DateTime.parse(a.date))); // Sort future first
+
+        // The following is to get Videos for events
+        // Filter events that have a non-null "video_url"
+        final List<String> validVideoIds = events
+            .where((event) => event["video_url"] != null) // Only keep valid URLs
+            .map<String>((event) => YoutubePlayer.convertUrlToId(event["video_url"].toString()) ?? "")
+            .where((id) => id.isNotEmpty) // Remove failed conversions
+            .toList()
+            .reversed // Reverse to get the newest videos first
+            .toList();
+
+        setState(() {
+          allEvents = parsedEvents;
+          eventsCount = events.length;
+          allVideoIDs = validVideoIds;
+          topVideoIDs = validVideoIds.take(3).toList();
+          _controllers = topVideoIDs.map((id) => YoutubePlayerController(
+            initialVideoId: id,
+            flags: YoutubePlayerFlags(autoPlay: false, mute: false),
+          )).toList();
+          _isVideosLoading = false;
+        });
+
+      } else {
+        print(response.statusCode);
+        throw Exception("Failed to load events (status: ${response.statusCode})");
+      }
     } catch (e) {
       setState(() {
         _videosHaveError = true;
         _isVideosLoading = false;
       });
+    }
+  }
+
+  Future<void> _toggleJoin() async {
+    setState(() => isMember = !isMember);
+
+    final apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
+    final reqBody = jsonEncode({
+                      "user_id": _userId,
+                    });
+
+    try{
+      final response = await (isMember
+        ? http.post( // Use POST for adding members
+            Uri.parse('$apiUrl/club/${widget.club.id}/members'),
+            headers: {'Content-Type': 'application/json'},
+            body: reqBody
+          )
+        : http.delete( // Use DELETE for removing members
+            Uri.parse('$apiUrl/club/${widget.club.id}/members/$_userId'),
+            headers: {'Content-Type': 'application/json'},
+          )
+      );
+    } catch (e) {
+      print("Error updating member status: $e");
+      setState(() => isMember = !isMember); // Revert if error
     }
   }
 
@@ -206,7 +361,7 @@ class _ClubHomePageState extends State<ClubHomePage> {
                             onTap: () {
                               PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
                                 context, 
-                                screen: MemberListPage(userId: -1, listType: "followers"), 
+                                screen: MemberListPage(clubId: widget.club.id), 
                                 settings: RouteSettings(name: "FollowersListPage"), // Define a route name
                               );
                             },
@@ -361,51 +516,89 @@ class _ClubHomePageState extends State<ClubHomePage> {
 
                     // Next Upcoming Event
 
-                    // Events List View (Scrollable)
-                    events.isEmpty
-                      ? const Center(child: Text("No Events"))
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // List of All Events
-                            Expanded(
-                              child: ListView.builder(
-                                itemCount: events.length,
-                                itemBuilder: (context, index) {
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                                    child: Container(
-                                      margin: const EdgeInsets.symmetric(vertical: 10),
-                                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey[200],
-                                        borderRadius: BorderRadius.circular(12),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black12,
-                                            blurRadius: 5,
-                                            spreadRadius: 2,
-                                          )
+                  ],
+                ),
+
+                // Events List View (Scrollable)
+                allEvents.isEmpty
+                  ? const Center(child: Text("No Events"))
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // List of All Events
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: allEvents.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(vertical: 10),
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black12,
+                                      blurRadius: 5,
+                                      spreadRadius: 2,
+                                    )
+                                  ],
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    // Event Details
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            allEvents[index].eventName,
+                                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                          ),
+                                          SizedBox(height: 6),
+                                          Text(
+                                            "Date: ${allEvents[index].date} @ ${formatEventTime(allEvents[index].time)}",
+                                            style: TextStyle(fontSize: 16, color: Colors.black),
+                                          ),
+                                          SizedBox(height: 6),
+                                          Text(
+                                            "Location: ${allEvents[index].location}",
+                                            style: TextStyle(fontSize: 16, color: Colors.black),
+                                          ),
                                         ],
                                       ),
-                                      child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                        children: [
-                                          // Event Details
-                                          Expanded(
-                                            child: Text('')
-                                          )
-                                        ]
+                                    ),
+                                    // Arrow Button
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 16, right: 10),
+                                      child: Container(
+                                        width: 50,
+                                        height: 50,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.blue,
+                                        ),
+                                        child: IconButton(
+                                          onPressed: () {
+                                            // TODO: Replace with event details page
+                                          },
+                                          color: Colors.blue,
+                                          icon: Icon(Icons.arrow_forward, size: 20, color: Colors.white),
+                                        ),
                                       ),
-                                    )
-                                  );
-                                },
+                                    ),
+                                  ]
+                                ),
                               )
-                            )
-                          ]
+                            );
+                          },
                         )
-                  ],
-                )
+                      ]
+                    )
               ]
             )
           )

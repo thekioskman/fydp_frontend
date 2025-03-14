@@ -5,10 +5,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:frontend/profile/profilemain.dart'; // Import your profile page
 
 class MemberListPage extends StatefulWidget {
-  final int userId;
-  final String listType; // "followers" or "followings"
+  final int clubId;
 
-  const MemberListPage({super.key, required this.userId, required this.listType});
+  const MemberListPage({super.key, required this.clubId,});
 
   @override
   _MemberListPageState createState() => _MemberListPageState();
@@ -40,18 +39,14 @@ class _MemberListPageState extends State<MemberListPage> {
       _hasError = false;
     });
 
-    // TODO: change to retrieve all members of a club!
     try {
       final apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
-      final response = await http.get(Uri.parse('$apiUrl/${widget.listType}/${widget.userId}'));
-
+      final response = await http.get(Uri.parse('$apiUrl/club/${widget.clubId}/members'));
+      print("YEET");
+      print(response.statusCode);
       if (response.statusCode == 200) {
         final Map<String, dynamic> decodedData = jsonDecode(response.body);
-        final List<dynamic> userList = decodedData[widget.listType] ?? []; // Extracts "followers" or "following"
-
-        // Print userData for debugging
-        print('Fetched ${widget.listType}: $decodedData');
-        print('Fetched ${widget.listType}: $userList');
+        final List<dynamic> userList = decodedData['members'] ?? []; // Extracts "followers" or "following"
 
         setState(() {
           _users = userList.cast<Map<String, dynamic>>(); // Ensure correct format
@@ -73,7 +68,7 @@ class _MemberListPageState extends State<MemberListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.listType == "followers" ? "Followers" : "Followings"),
+        title: Text("Club Members"),
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
