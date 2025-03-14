@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'location_picker.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:convert'; // For decoding JSON
+import 'package:http/http.dart' as http; // For HTTP requests
 
 class CreateEventPage extends StatefulWidget {
   @override
@@ -11,6 +16,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   DateTime? _selectedDate;
+  LatLng? _selectedLocation;
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -25,6 +31,54 @@ class _CreateEventPageState extends State<CreateEventPage> {
       });
     }
   }
+
+  Future<void> _pickLocation(BuildContext context) async {
+    final LatLng? location = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LocationPicker(
+          onLocationPicked: (LatLng location) {
+            Navigator.pop(context, location);
+          },
+        ),
+      ),
+    );
+
+    if (location != null) {
+      setState(() {
+        _selectedLocation = location;
+      });
+    }
+  }
+
+    void _submitForm() async {
+    if (_formKey.currentState!.validate()) {
+
+        final apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
+        _formKey.currentState!.save();
+        // Handle the form submission, e.g., save the event details
+        final eventData = {
+        'title': _titleController.text,
+        'description': _descriptionController.text,
+        'date': _selectedDate != null ? DateFormat('yyyy-MM-dd').format(_selectedDate!) : null,
+        'location': _selectedLocation != null
+            ? {
+                'latitude': _selectedLocation!.latitude,
+                'longitude': _selectedLocation!.longitude,
+                }
+            : null,
+        };
+        // Send eventData to your backend
+        
+        final response = await http.post(
+        Uri.parse('$apiUrl/event/new'),
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+        body: jsonEncode(eventData),
+        );
+        // Navigate back or show a success message
+        Navigator.pop(context);
+        }
+    }
 
   @override
   Widget build(BuildContext context) {
@@ -75,8 +129,29 @@ class _CreateEventPageState extends State<CreateEventPage> {
                       Text(
                         _selectedDate == null
                             ? 'Select a date'
-                            : DateFormat('yyyy-MM-dd').format(_selectedDate!)),
+                            : DateFormat('yyyy-MM-dd').format(_selectedDate!),
+                      ),
                       Icon(Icons.calendar_today),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 16),
+              InkWell(
+                onTap: () => _pickLocation(context),
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: 'Location',
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text(
+                        _selectedLocation == null
+                            ? 'Select a location'
+                            : 'Lat: ${_selectedLocation!.latitude}, Lng: ${_selectedLocation!.longitude}',
+                      ),
+                      Icon(Icons.location_on),
                     ],
                   ),
                 ),
@@ -89,9 +164,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         // Process the data
-                        print('Event Title: ${_titleController.text}');
-                        print('Event Description: ${_descriptionController.text}');
-                        print('Event Date: $_selectedDate');
+                        _submitForm();
                       }
                     },
                     child: Text('Add'),
@@ -103,6 +176,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                       _descriptionController.clear();
                       setState(() {
                         _selectedDate = null;
+                        _selectedLocation = null;
                       });
                     },
                     child: Text('Cancel'),
