@@ -1,40 +1,430 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'club.dart';
+import 'package:frontend/profile/components/clubtag.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:frontend/clubs/memberslist.dart';
+import 'package:frontend/profile/pages/profilevideosmain.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:frontend/clubs/create_event.dart';
+import 'package:frontend/clubs/event.dart';
+import 'package:intl/intl.dart';
 
-class ClubHomePage extends StatelessWidget {
+class ClubHomePage extends StatefulWidget {
   final Club club;
 
-  ClubHomePage({required this.club});
+  const ClubHomePage({super.key, required this.club});
+
+  @override
+  _ClubHomePageState createState() => _ClubHomePageState();
+}
+
+class _ClubHomePageState extends State<ClubHomePage> {
+  bool _isLoading = true;
+  bool _hasError = false;
+  bool isOwner = false;
+
+  // More club details
+  int membersCount = 0;
+  int eventsCount = 0;
+
+  // Event Videos Section
+  bool _isVideosLoading = true;
+  bool _videosHaveError = false;
+  List<String> topVideoIDs = [];
+  List<String> allVideoIDs = [];
+  late List<YoutubePlayerController> _controllers;
+
+  // Events Section
+  List<Event> events = [];
+
+  // Only used if isOwner is false
+  bool isMember = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshClub(); // Ensure fresh data when the page appears
+  }
+
+  Future<void> _refreshClub() async {
+    try {
+      // update video load...?
+      // update number of followers
+      // update number of events held
+      // update list of events
+      // In non-owner view
+      setState(() {
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _hasError = true;
+        _isLoading = false;
+      });
+    }
+
+    _fetchVideos();
+  }
+
+  Future<void> _toggleJoin() async {
+    setState(() => isMember = !isMember);
+  }
+
+  Future<void> _fetchVideos() async {
+    try {
+      // update video load...?
+      // update number of followers
+      // update number of events held
+      // update list of events
+      // In non-owner view
+      setState(() {
+        _isVideosLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _videosHaveError = true;
+        _isVideosLoading = false;
+      });
+    }
+  }
+
+  /// **Format event time into 12-hour AM/PM format**
+  String formatEventTime(String time) {
+    try {
+      DateTime parsedTime = DateTime.parse("1970-01-01T$time"); // Add a dummy date
+      return DateFormat.jm().format(parsedTime); // Format as "7 AM", "8 PM", etc.
+    } catch (e) {
+      print("Error formatting time: $time");
+      return time; // Fallback to original time
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(club.name ?? 'Club Home'),
+        title: Text(widget.club.name),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Club Name: ${club.name}",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 16),
-            Text(
-              "Club Tag: #${club.clubTag}",
-              style: TextStyle(fontSize: 18),
-            ),
-            SizedBox(height: 16),
-            Text(
-              "Description: ${club.description}",
-              style: TextStyle(fontSize: 16),
-            ),
-            // Add more details or functionality as needed
-          ],
+      body: _isLoading
+        ? Center(child: CircularProgressIndicator())
+        : _hasError 
+          ? Center(child: Text("Failed to load profile", style: TextStyle(color: Colors.red)))
+          : RefreshIndicator(
+            onRefresh: _refreshClub,
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                // Picture banner...? -> make it some stock photo for now... -------------------
+                Container(
+                  width: double.infinity,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: CachedNetworkImageProvider('https://d2kf8ptlxcina8.cloudfront.net/W2RUIDAQ2T-preview.png'),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+
+                // Top contents (name, username, follow button...?) ------------------
+                Column (
+                  children: [
+                    Row (
+                      children: [
+                        // Title + Club Tag
+                        Row (
+                          children: [
+                            Padding (
+                              padding: EdgeInsets.only(top: 10.0, bottom: 16.0, left: 16.0),
+                              child: Text(
+                                widget.club.name,
+                                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                              )
+                            ),
+                            SizedBox(width: 10),
+                            ClubTag(club: widget.club, clubColor: widget.club.color, link: false)
+                          ],
+                        ),                        
+                      ]
+                    ),
+
+                    // Join button (if not owner)
+                    if (!isOwner)
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: ElevatedButton(
+                            onPressed: _toggleJoin,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isMember ? Colors.lightBlue.shade100 : Colors.grey.shade300,
+                              side: BorderSide(
+                                color: isMember ? Colors.blue.shade700 : Colors.grey.shade700,
+                                width: 1,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: SizedBox(
+                              width: double.infinity,
+                              height: 20,
+                              child: Center(
+                                child: Text(
+                                  isMember ? "Joined" : "Join",
+                                  style: TextStyle(
+                                    color: isMember ? Colors.blue.shade900 : Colors.black,
+                                  )
+                                )
+                              )
+                            )
+                          ),
+                        )
+                      ),
+                    // Bio
+                    Padding(
+                      padding: EdgeInsets.only(top: 10.0, bottom: 16.0, left: 16.0, right: 16.0),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          widget.club.description,
+                          textAlign: TextAlign.left, // Ensure text inside is also left-aligned
+                        ),
+                      ),
+                    ),
+
+                    // Stats
+                    Divider(),
+                    Padding(
+                      padding: EdgeInsets.only(top: 5.0, bottom: 5.0, left: 16.0, right: 16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
+                                context, 
+                                screen: MemberListPage(userId: -1, listType: "followers"), 
+                                settings: RouteSettings(name: "FollowersListPage"), // Define a route name
+                              );
+                            },
+                            child: _buildStatColumn('Members', membersCount),
+                          ),
+                          _buildStatColumn('Events Held', eventsCount),
+                          // Location is permanently Waterloo for now
+                          Column(
+                            children: [
+                              Center(
+                                child: Text('Location', style: TextStyle(fontSize: 14)),
+                              ),
+                              Center(
+                                child: Text(
+                                  "Waterloo",
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      )
+                    ),
+                    Divider(),
+                  ],
+                ),
+
+                // Event Videos -----------------------------------
+                Column(
+                  children: [
+                    // Section Title
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                            padding: EdgeInsets.only(top: 20.0, bottom: 16.0, left: 16.0),
+                            child: Text(
+                              "Event Videos",
+                              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                            )),
+                        GestureDetector(
+                          onTap: () {
+                            PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
+                              context,
+                              screen: ProfileVideosMainPage(
+                                  sectionName: "Videos",
+                                  videoIDs: allVideoIDs,
+                                ),
+                              settings: RouteSettings(name: "ProfileVideosMainPage"), // Define a route name
+                              pageTransitionAnimation: PageTransitionAnimation.cupertino,
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                            child: Text(
+                              ">",
+                              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // Loading indicator
+                    if (_isVideosLoading) 
+                      CircularProgressIndicator(),
+                    
+                    // Error message
+                    if (_videosHaveError) 
+                      Text("Failed to load videos", style: TextStyle(color: Colors.red)),
+
+                    // If no videos available, show "No videos for events yet!"
+                    if (!_isVideosLoading && !_videosHaveError && topVideoIDs.isEmpty)
+                      Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20),
+                        child: Center(
+                          child: Text(
+                            "No videos for events yet!",
+                            style: TextStyle(fontSize: 18, color: Colors.grey),
+                          ),
+                        ),
+                      ),
+
+                    // Carousel of Video Cards Here
+                    if (!_isVideosLoading && !_videosHaveError && topVideoIDs.isNotEmpty) 
+                      CarouselSlider(
+                        options: CarouselOptions(
+                          height: 250,
+                          enlargeCenterPage: true, 
+                          autoPlay: false,
+                          scrollPhysics: _controllers.length == 1 
+                            ? NeverScrollableScrollPhysics()  // Disables scrolling if only 1 item
+                            : BouncingScrollPhysics(),
+                          enableInfiniteScroll: _controllers.length > 1,
+                        ),
+                        items: _controllers.map((controller) {
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(15),
+                            child: GestureDetector(
+                              onHorizontalDragUpdate: (details) {}, // Absorb horizontal drag to enable swiping
+                              child: YoutubePlayer(
+                                  controller: controller, 
+                                  showVideoProgressIndicator: true,
+                                  // TODO: look into disabling drag to seek
+                                ),
+                            )
+                          );
+                        }).toList(),
+                      ),
+                  ],
+                ),
+
+                // Events -----------------------------------------
+                Column(
+                  children: [
+                    // Title Section
+                    Row(
+                      children: [
+                        // Title
+                        Padding(
+                          padding: EdgeInsets.only(top: 20.0, bottom: 16.0, left: 16.0),
+                          child: Text(
+                            "Events",
+                            style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                          )
+                        ),
+                        Spacer(),
+                        // Add Event Button Only in Owner-View
+                        if (isOwner)
+                          Padding(
+                            padding: EdgeInsets.only(right: 16.0),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.blue, // Set button color to blue
+                              ),
+                              child: IconButton(
+                                icon: Icon(Icons.add, color: Colors.white),
+                                onPressed: () {
+                                  PersistentNavBarNavigator.pushNewScreen(
+                                    context, 
+                                    screen: CreateEventPage(), 
+                                  );
+                                },
+                              ),
+                            )
+                          ),
+                      ],
+                    ),
+
+                    // Next Upcoming Event
+
+                    // Events List View (Scrollable)
+                    events.isEmpty
+                      ? const Center(child: Text("No Events"))
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // List of All Events
+                            Expanded(
+                              child: ListView.builder(
+                                itemCount: events.length,
+                                itemBuilder: (context, index) {
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                                    child: Container(
+                                      margin: const EdgeInsets.symmetric(vertical: 10),
+                                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[200],
+                                        borderRadius: BorderRadius.circular(12),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black12,
+                                            blurRadius: 5,
+                                            spreadRadius: 2,
+                                          )
+                                        ],
+                                      ),
+                                      child: Row(
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                          // Event Details
+                                          Expanded(
+                                            child: Text('')
+                                          )
+                                        ]
+                                      ),
+                                    )
+                                  );
+                                },
+                              )
+                            )
+                          ]
+                        )
+                  ],
+                )
+              ]
+            )
+          )
+    );
+  }
+
+  Widget _buildStatColumn(String label, num count) {
+    return Column(
+      children: [
+        Center(
+          child: Text(label, style: TextStyle(fontSize: 14)),
         ),
-      ),
+        Center(
+          child: Text(
+            count.toString(),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
     );
   }
 }

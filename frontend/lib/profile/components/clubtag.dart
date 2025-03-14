@@ -6,23 +6,24 @@ import 'package:frontend/clubs/club_home_page.dart';
 
 class ClubTag extends StatelessWidget {
   final Club club; // Link to corresponding club page
+  final bool link;
   final Color? clubColor; // Optional club color parameter
 
   // Define a default internal color
   static const Color _defaultColor = Colors.blueAccent;
 
-  const ClubTag({super.key, required this.club, this.clubColor});
+  const ClubTag({super.key, required this.club, this.link = true, this.clubColor});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
+      onTap: link ? () {
         // Navigate to the club page when tapped
         PersistentNavBarNavigator.pushNewScreen(
           context, 
           screen: ClubHomePage(club: club), 
         );
-      },
+      } : null,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(

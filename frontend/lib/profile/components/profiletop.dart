@@ -5,6 +5,7 @@ import 'clubtag.dart';
 import 'followbutton.dart';
 import '../../clubs/club.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ProfileTopPage extends StatelessWidget {
   final int currentUserId; // Logged in user
@@ -47,7 +48,9 @@ class ProfileTopPage extends StatelessWidget {
           child: Center(
             child: CircleAvatar(
               radius: 40,
-              backgroundImage: NetworkImage(profilePicUrl),
+              backgroundImage: CachedNetworkImageProvider(
+                profilePicUrl
+              )
             ),
           ),
         ),
