@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:frontend/posts/all_posts_page.dart';
+import 'package:frontend/search/search.dart';
 import 'video_compare/video_compare.dart';
 import 'profile/profilemain.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart'; // https://pub.dev/packages/persistent_bottom_nav_bar
@@ -74,6 +75,7 @@ class _MainScreenState extends State<MainScreen> {
 
     return [
         PostsPage(),
+        SearchPage(),
         ClubsScreen(),
         UploadPostPage(),
         ProfileMainPage(profileUserId: userId,),
@@ -89,6 +91,12 @@ class _MainScreenState extends State<MainScreen> {
             title: "Home",
             activeColorPrimary: Colors.blue,
             inactiveColorPrimary: Colors.grey,
+        ),
+        PersistentBottomNavBarItem(
+          icon: Icon(Icons.search),
+          title: "Search",
+          activeColorPrimary: Colors.blue,
+          inactiveColorPrimary: Colors.grey,
         ),
         PersistentBottomNavBarItem(
             icon: Icon(Icons.book),
