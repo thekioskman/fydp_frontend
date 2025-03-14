@@ -21,32 +21,6 @@ class _ProfileVideosMainPageState extends State<ProfileVideosMainPage> {
         : Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Section Title
-            Padding(
-              padding: const EdgeInsets.only(top: 20.0, bottom: 16.0, left: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).popUntil(ModalRoute.withName("/"));
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: Text(
-                        "<",
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                    ), 
-                  ),
-                  Text(
-                    "Back",
-                    style: const TextStyle(fontSize: 22),
-                  )
-                ]
-              )
-            ),
-
             // List of Videos
             Expanded(
               child: ListView.builder(

@@ -35,7 +35,7 @@ class Club {
         return Colors.blue;
       case "Origins":
         return Colors.green;
-      case "HaebeatDanceCrew":
+      case "Haebeat":
         return Colors.yellow;
       default:
         return Colors.grey;
