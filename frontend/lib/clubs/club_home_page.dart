@@ -256,6 +256,16 @@ class _ClubHomePageState extends State<ClubHomePage> {
     }
   }
 
+  void _createEvent(BuildContext context) async {
+    PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
+      context,
+      settings: RouteSettings(name: "CreateEventScreen"),
+      screen: CreateEventPage(),
+      withNavBar: true,
+      pageTransitionAnimation: PageTransitionAnimation.cupertino,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
