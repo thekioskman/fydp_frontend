@@ -13,42 +13,71 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  TextEditingController searchController = TextEditingController();
+  TextEditingController clubSearchController = TextEditingController();
+  TextEditingController userSearchController = TextEditingController();
+
   List<dynamic> clubs = [];
   List<dynamic> users = [];
-  bool isLoading = false;
-  bool hasError = false;
 
-  Future<void> search(String query) async {
+  bool isLoadingClubs = false;
+  bool hasErrorClubs = false;
+  bool isLoadingUsers = false;
+  bool hasErrorUsers = false;
+
+  Future<void> searchClubs(String query) async {
     setState(() {
-      isLoading = true;
-      hasError = false;
+      isLoadingClubs = true;
+      hasErrorClubs = false;
       clubs = [];
+    });
+
+    final String apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
+
+    try {
+      final response = await http.get(Uri.parse('$apiUrl/search/clubs?query=$query'));
+
+      if (response.statusCode == 200) {
+        final clubData = jsonDecode(response.body);
+        setState(() {
+          clubs = clubData['data'];
+          isLoadingClubs = false;
+        });
+      } else {
+        throw Exception("Failed to fetch club results.");
+      }
+    } catch (error) {
+      setState(() {
+        hasErrorClubs = true;
+        isLoadingClubs = false;
+      });
+    }
+  }
+
+  Future<void> searchUsers(String query) async {
+    setState(() {
+      isLoadingUsers = true;
+      hasErrorUsers = false;
       users = [];
     });
 
     final String apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
 
     try {
-      final clubResponse = await http.get(Uri.parse('$apiUrl/search/clubs?query=$query'));
-      final userResponse = await http.get(Uri.parse('$apiUrl/search/users?query=$query'));
+      final response = await http.get(Uri.parse('$apiUrl/search/users?query=$query'));
 
-      if (clubResponse.statusCode == 200 && userResponse.statusCode == 200) {
-        final clubData = jsonDecode(clubResponse.body);
-        final userData = jsonDecode(userResponse.body);
-
+      if (response.statusCode == 200) {
+        final userData = jsonDecode(response.body);
         setState(() {
-          clubs = clubData['data']; // Extract clubs list
-          users = userData['data']; // Extract users list
-          isLoading = false;
+          users = userData['data'];
+          isLoadingUsers = false;
         });
       } else {
-        throw Exception("Failed to fetch results.");
+        throw Exception("Failed to fetch user results.");
       }
     } catch (error) {
       setState(() {
-        hasError = true;
-        isLoading = false;
+        hasErrorUsers = true;
+        isLoadingUsers = false;
       });
     }
   }
@@ -61,34 +90,35 @@ class _SearchPageState extends State<SearchPage> {
         padding: const EdgeInsets.all(12.0),
         child: Column(
           children: [
-            // Search Bar
+            // Club Search Bar
             TextField(
-              controller: searchController,
+              controller: clubSearchController,
               decoration: InputDecoration(
-                hintText: "Search for clubs or users...",
+                hintText: "Search for clubs...",
                 suffixIcon: IconButton(
                   icon: Icon(Icons.search),
                   onPressed: () {
-                    if (searchController.text.isNotEmpty) {
-                      search(searchController.text);
+                    if (clubSearchController.text.isNotEmpty) {
+                      searchClubs(clubSearchController.text);
                     }
                   },
                 ),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               ),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 10),
 
-            // Loading Indicator
-            if (isLoading) CircularProgressIndicator(),
+            // Loading Indicator for Clubs
+            if (isLoadingClubs) CircularProgressIndicator(),
 
-            // Error Message
-            if (hasError) Text("Failed to load results", style: TextStyle(color: Colors.red)),
+            // Error Message for Clubs
+            if (hasErrorClubs) Text("Failed to load clubs", style: TextStyle(color: Colors.red)),
 
-            // Display Search Results
-            if (!isLoading && !hasError)
+            // Display Club Search Results
+            if (!isLoadingClubs && !hasErrorClubs)
               Expanded(
                 child: ListView(
+                  shrinkWrap: true,
                   children: [
                     if (clubs.isNotEmpty) ...[
                       Text("Clubs", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -97,28 +127,61 @@ class _SearchPageState extends State<SearchPage> {
                         title: Text(club['name']),
                         subtitle: Text(club['description'] ?? "No description available"),
                         onTap: () {
-                          // Convert API response into a Club model and navigate to ClubDetailPage
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => ClubDetailPage(
-                                club: Club.fromJson(club), // Convert JSON to Club model
+                                club: Club.fromJson(club),
                               ),
                             ),
                           );
                         },
                       )).toList(),
                     ],
+                    if (clubs.isEmpty && !isLoadingClubs) Center(child: Text("No clubs found")),
+                  ],
+                ),
+              ),
 
+            SizedBox(height: 20),
+
+            // User Search Bar
+            TextField(
+              controller: userSearchController,
+              decoration: InputDecoration(
+                hintText: "Search for users...",
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.search),
+                  onPressed: () {
+                    if (userSearchController.text.isNotEmpty) {
+                      searchUsers(userSearchController.text);
+                    }
+                  },
+                ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+            SizedBox(height: 10),
+
+            // Loading Indicator for Users
+            if (isLoadingUsers) CircularProgressIndicator(),
+
+            // Error Message for Users
+            if (hasErrorUsers) Text("Failed to load users", style: TextStyle(color: Colors.red)),
+
+            // Display User Search Results
+            if (!isLoadingUsers && !hasErrorUsers)
+              Expanded(
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [
                     if (users.isNotEmpty) ...[
-                      SizedBox(height: 20),
                       Text("Users", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       ...users.map((user) => ListTile(
                         leading: Icon(Icons.person, color: Colors.green),
                         title: Text(user['username']),
                         subtitle: Text("${user['first_name']} ${user['last_name']}"),
                         onTap: () {
-                          // Navigate to ProfileSectionPage from profilesection.dart
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -131,9 +194,7 @@ class _SearchPageState extends State<SearchPage> {
                         },
                       )).toList(),
                     ],
-
-                    if (clubs.isEmpty && users.isEmpty && !isLoading)
-                      Center(child: Text("No results found")),
+                    if (users.isEmpty && !isLoadingUsers) Center(child: Text("No users found")),
                   ],
                 ),
               ),
