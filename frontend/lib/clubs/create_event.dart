@@ -7,6 +7,9 @@ import 'dart:convert'; // For decoding JSON
 import 'package:http/http.dart' as http; // For HTTP requests
 
 class CreateEventPage extends StatefulWidget {
+    final int club_id;
+
+  const CreateEventPage({super.key, required this.club_id});
   @override
   _CreateEventPageState createState() => _CreateEventPageState();
 }
@@ -79,7 +82,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
       _formKey.currentState!.save();
       // Handle the form submission, e.g., save the event details
       final eventData = {
-        'club_id' : 1,
+        'club_id' : widget.club_id,
         'title': _titleController.text,
         'description': _descriptionController.text,
         'duration': _eventLengthController.text,

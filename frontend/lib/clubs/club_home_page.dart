@@ -256,15 +256,15 @@ class _ClubHomePageState extends State<ClubHomePage> {
     }
   }
 
-  void _createEvent(BuildContext context) async {
-    PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
-      context,
-      settings: RouteSettings(name: "CreateEventScreen"),
-      screen: CreateEventPage(),
-      withNavBar: true,
-      pageTransitionAnimation: PageTransitionAnimation.cupertino,
-    );
-  }
+  // void _createEvent(BuildContext context) async {
+  //   PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
+  //     context,
+  //     settings: RouteSettings(name: "CreateEventScreen"),
+  //     screen: CreateEventPage(club_id : widget.club.id),
+  //     withNavBar: true,
+  //     pageTransitionAnimation: PageTransitionAnimation.cupertino,
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -515,7 +515,7 @@ class _ClubHomePageState extends State<ClubHomePage> {
                                 onPressed: () {
                                   PersistentNavBarNavigator.pushNewScreen(
                                     context, 
-                                    screen: CreateEventPage(), 
+                                    screen: CreateEventPage(club_id : widget.club.id), 
                                   );
                                 },
                               ),
