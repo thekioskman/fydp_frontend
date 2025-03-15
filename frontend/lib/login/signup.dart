@@ -69,8 +69,9 @@ class _SignUpPageState extends State<SignUpPage> {
             );
           }
         } else {
+          final responseBody = jsonDecode(response.body);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Server error. Please try again later.')),
+            SnackBar(content: Text(responseBody['detail'] ?? 'Server error. Please try again later.')),
           );
         }
       } catch (e) {

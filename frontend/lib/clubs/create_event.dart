@@ -5,9 +5,10 @@ import 'location_picker.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert'; // For decoding JSON
 import 'package:http/http.dart' as http; // For HTTP requests
+import 'package:flutter/services.dart';
 
 class CreateEventPage extends StatefulWidget {
-    final int club_id;
+  final int club_id;
 
   const CreateEventPage({super.key, required this.club_id});
   @override
@@ -23,6 +24,12 @@ class _CreateEventPageState extends State<CreateEventPage> {
   TimeOfDay? _selectedTime;
   LatLng? _selectedLocation;
   String? _selectedAddress;
+
+  String formatTimeOfDay(TimeOfDay time) {
+    final now = DateTime.now(); // Get current date
+    final formattedTime = DateTime(now.year, now.month, now.day, time.hour, time.minute);
+    return formattedTime.toIso8601String(); // Include timezone information
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -51,7 +58,6 @@ class _CreateEventPageState extends State<CreateEventPage> {
   }
 
   Future<void> _pickLocation(BuildContext context) async {
-
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -80,27 +86,53 @@ class _CreateEventPageState extends State<CreateEventPage> {
     if (_formKey.currentState!.validate()) {
       final apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
       _formKey.currentState!.save();
-      // Handle the form submission, e.g., save the event details
+
+      // Combine date and time into a single DateTime object
+      final combinedDateTime = DateTime(
+        _selectedDate!.year,
+        _selectedDate!.month,
+        _selectedDate!.day,
+        _selectedTime!.hour,
+        _selectedTime!.minute,
+      );
+
       final eventData = {
-        'club_id' : widget.club_id,
+        'club_id': widget.club_id,
         'title': _titleController.text,
         'description': _descriptionController.text,
-        'duration': _eventLengthController.text,
-        'date':  DateFormat('yyyy-MM-dd').format(_selectedDate!),
-        'time': _selectedTime?.format(context),
+        'duration_minutes': _eventLengthController.text,
+        'date': combinedDateTime.toIso8601String(), // Include timezone information
         'latitude': _selectedLocation!.latitude,
         'longitude': _selectedLocation!.longitude,
         'location': _selectedAddress, // Use the edited address
-        'created_on' : DateTime.now().toUtc().subtract(Duration(days: 2)).toIso8601String()
+        'created_on': DateTime.now().toUtc().toIso8601String(), // Include timezone information
       };
+
       // Send eventData to your backend
       final response = await http.post(
-        Uri.parse('$apiUrl/event/new'),
+        Uri.parse('$apiUrl/clubevent/create'),
         headers: {'Content-Type': 'application/json; charset=UTF-8'},
         body: jsonEncode(eventData),
       );
-      // Navigate back or show a success message
-      Navigator.pop(context);
+
+      if (response.statusCode == 200) {
+        // Success: Navigate back or show a success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Event created successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context); // Navigate back to the previous screen
+      } else {
+        // Error: Show an error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to create event. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -114,7 +146,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          child: SingleChildScrollView( // Make the form scrollable
+          child: SingleChildScrollView(
             child: Column(
               children: <Widget>[
                 TextFormField(
@@ -146,9 +178,17 @@ class _CreateEventPageState extends State<CreateEventPage> {
                   decoration: InputDecoration(
                     labelText: 'Event Duration (Minutes)',
                   ),
+                   keyboardType: TextInputType.number, // Set keyboard to numeric
+                    inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly, // Allow only digits
+                    ],
+
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please Enter Length of Event in Minutes';
+                    }
+                    if (int.tryParse(value) == null) {
+                        return 'Please enter a valid number';
                     }
                     return null;
                   },
@@ -208,12 +248,12 @@ class _CreateEventPageState extends State<CreateEventPage> {
                               TextFormField(
                                 initialValue: _selectedAddress,
                                 decoration: InputDecoration(
-                                  border: InputBorder.none, // Remove the default border
-                                  contentPadding: EdgeInsets.zero, // Adjust padding
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.zero,
                                 ),
                                 onChanged: (value) {
                                   setState(() {
-                                    _selectedAddress = value; // Update the address when the user edits it
+                                    _selectedAddress = value;
                                   });
                                 },
                               ),
@@ -228,33 +268,33 @@ class _CreateEventPageState extends State<CreateEventPage> {
                     ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          // Process the data
                           if (_selectedLocation == null) {
-                            // Show a validation message
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('Please select a location'),
                                 backgroundColor: Colors.red,
                               ),
                             );
+                          } else {
+                            _submitForm();
                           }
-                          _submitForm();
                         }
                       },
                       child: Text('Add'),
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        // Clear the form
                         _titleController.clear();
                         _descriptionController.clear();
+                        _eventLengthController.clear();
                         setState(() {
                           _selectedDate = null;
                           _selectedTime = null;
                           _selectedLocation = null;
+                          _selectedAddress = "";
                         });
                       },
-                      child: Text('Cancel'),
+                      child: Text('Clear'),
                     ),
                   ],
                 ),
