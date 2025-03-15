@@ -67,7 +67,7 @@ class _LoginPageState extends State<LoginPage> {
         final response = await http.post(
           Uri.parse('$apiUrl/login'),
           headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({'username': username, 'password': password}), // ✅ Send username instead of email
+          body: jsonEncode({'username': username, 'password': password}),
         );
 
         if (!mounted) return;
@@ -81,7 +81,7 @@ class _LoginPageState extends State<LoginPage> {
 
             // Save credentials after successful login
             final prefs = await SharedPreferences.getInstance();
-            await prefs.setString('username', username); // ✅ Save username instead of email
+            await prefs.setString('username', username);
             await prefs.setString('user_id', userId.toString());
             await prefs.setString("first_name", firstName);
             await prefs.setString("last_name", lastName);
