@@ -66,7 +66,7 @@ class _VideoComparePageState extends State<VideoComparePage> {
 
     var request = http.MultipartRequest(
       'POST',
-      Uri.parse('http://127.0.0.1:8000/compare'),
+      Uri.parse('http://3.147.72.167:8000/compare'),
     );
 
     if (kIsWeb) {
@@ -245,7 +245,7 @@ class _VideoComparePageState extends State<VideoComparePage> {
                       ),
                     ),
                     subtitle: Text(
-                        "Evaluation: ${mismatch['evaluation']}, Mean Difference: ${mismatch['mean_difference']}"),
+                        "Evaluation: ${mismatch['evaluation']}"),
                   );
                 },
               ),
