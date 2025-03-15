@@ -79,14 +79,16 @@ class _CreateEventPageState extends State<CreateEventPage> {
       _formKey.currentState!.save();
       // Handle the form submission, e.g., save the event details
       final eventData = {
+        'club_id' : 1,
         'title': _titleController.text,
         'description': _descriptionController.text,
         'duration': _eventLengthController.text,
-        'date': _selectedDate != null ? DateFormat('yyyy-MM-dd').format(_selectedDate!) : null,
+        'date':  DateFormat('yyyy-MM-dd').format(_selectedDate!),
         'time': _selectedTime?.format(context),
         'latitude': _selectedLocation!.latitude,
         'longitude': _selectedLocation!.longitude,
         'location': _selectedAddress, // Use the edited address
+        'created_on' : DateTime.now().toUtc().subtract(Duration(days: 2)).toIso8601String()
       };
       // Send eventData to your backend
       final response = await http.post(
