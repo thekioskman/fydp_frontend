@@ -14,6 +14,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http; // For HTTP requests
 import 'dart:convert'; // For decoding JSON
 import 'package:shared_preferences/shared_preferences.dart'; // For caching data
+import 'view_event.dart';
+
 
 class ClubHomePage extends StatefulWidget {
   final Club club;
@@ -171,20 +173,20 @@ class _ClubHomePageState extends State<ClubHomePage> {
       );
 
       if (response.statusCode == 200) {
+        
         final Map<String, dynamic> data = jsonDecode(response.body);
-
         if (!data.containsKey("events") || data["events"] == null) {
           throw Exception("No 'events' key in response.");
         }
 
         final List<dynamic> events = data["events"];
-
         // The following is to get upcoming events
         final List<Event> parsedEvents = events
           .map((event) => Event.fromJson(event))
           .toList()
           ..sort((a, b) => DateTime.parse(b.date).compareTo(DateTime.parse(a.date))); // Sort future first
 
+        print(parsedEvents);
         // The following is to get Videos for events
         // Filter events that have a non-null "video_url"
         final List<String> validVideoIds = events
@@ -594,7 +596,12 @@ class _ClubHomePageState extends State<ClubHomePage> {
                                         ),
                                         child: IconButton(
                                           onPressed: () {
-                                            // TODO: Replace with event details page
+                                            PersistentNavBarNavigator.pushNewScreen(
+                                              context,
+                                              screen: EventDetailPage(eventData :allEvents[index]),
+                                              withNavBar: true, // OPTIONAL VALUE. True by default.
+                                              pageTransitionAnimation: PageTransitionAnimation.cupertino,);
+
                                           },
                                           color: Colors.blue,
                                           icon: Icon(Icons.arrow_forward, size: 20, color: Colors.white),
