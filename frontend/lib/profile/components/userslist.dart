@@ -105,7 +105,7 @@ class _UserListPageState extends State<UserListPage> {
           child: CircleAvatar(
             radius: 30,
             backgroundImage: NetworkImage(user['profile_picture'] ??
-                'https://newprofilepic.photo-cdn.net//assets/images/article/profile.jpg?90af0c8'),
+                'https://www.shutterstock.com/image-vector/dancing-icon-logo-design-vector-600nw-2229555929.jpg'),
           ),
         ),
         title: Text(user['username'], style: TextStyle(fontWeight: FontWeight.bold)),

@@ -289,7 +289,7 @@ class _ClubHomePageState extends State<ClubHomePage> {
                   height: 200,
                   decoration: BoxDecoration(
                     image: DecorationImage(
-                      image: CachedNetworkImageProvider('https://d2kf8ptlxcina8.cloudfront.net/W2RUIDAQ2T-preview.png'),
+                      image: CachedNetworkImageProvider('https://cdn.pixabay.com/photo/2016/02/03/08/33/banner-1176678_640.jpg'),
                       fit: BoxFit.cover,
                     ),
                   ),

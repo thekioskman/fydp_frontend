@@ -47,7 +47,7 @@ class _ProfileMainPageState extends State<ProfileMainPage> {
   }
 
   Future<void> _refreshProfile() async {
-    _loadCachedUserData();
+    await _loadCachedUserData();
     await _fetchUserData(); // Fetch user data
 
     // Call fetchVideos() in ProfileSectionPage
@@ -91,15 +91,13 @@ class _ProfileMainPageState extends State<ProfileMainPage> {
 
       // Fetch user's clubs
       final clubsResponse = await http.get(Uri.parse('$apiUrl/user/${widget.profileUserId}/clubs'));
-      print("hello");
-      print(clubsResponse.statusCode);
       if (clubsResponse.statusCode != 200) throw Exception('Failed to load clubs');
 
       final List<dynamic> clubData = jsonDecode(clubsResponse.body)['clubs'];
       
       setState(() {
 
-        profilePicUrl = userData['profile_picture'] ?? 'https://newprofilepic.photo-cdn.net//assets/images/article/profile.jpg?90af0c8';
+        profilePicUrl = userData['profile_picture'] ?? 'https://www.shutterstock.com/image-vector/dancing-icon-logo-design-vector-600nw-2229555929.jpg';
         firstName = userData['first_name'] ?? 'Unknown';
         lastName = userData['last_name'] ?? '';
         username = userData['username'] ?? 'unknown_user';
