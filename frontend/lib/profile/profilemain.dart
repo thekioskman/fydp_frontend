@@ -10,9 +10,10 @@ import 'dart:convert'; // For decoding JSON
 import '../clubs/club.dart';
 
 class ProfileMainPage extends StatefulWidget {
-  final int profileUserId; // Allows viewing another user's profile
+  int profileUserId; // Allows viewing another user's profile
+  final bool isOwnProfile; // Only used for main:sketchy solution to set profile page properly during initial login
 
-  const ProfileMainPage({super.key, required this.profileUserId});
+  ProfileMainPage({super.key, required this.profileUserId, this.isOwnProfile = false,});
 
   @override
   _ProfileMainPageState createState() => _ProfileMainPageState();
@@ -46,6 +47,7 @@ class _ProfileMainPageState extends State<ProfileMainPage> {
   }
 
   Future<void> _refreshProfile() async {
+    _loadCachedUserData();
     await _fetchUserData(); // Fetch user data
 
     // Call fetchVideos() in ProfileSectionPage
@@ -63,6 +65,13 @@ class _ProfileMainPageState extends State<ProfileMainPage> {
           DateTime.now().toUtc().subtract(Duration(days: 2)).toIso8601String();
       _user_id = int.tryParse(prefs.getString("user_id") ?? "") ?? -1;
     });
+
+    // Check if isOwnProfile is true; if true, set profileUserId to _user_id
+    if (widget.isOwnProfile) {
+      setState(() {
+        widget.profileUserId = _user_id;
+      });
+    }
 
     _fetchUserData();
   }
@@ -82,6 +91,8 @@ class _ProfileMainPageState extends State<ProfileMainPage> {
 
       // Fetch user's clubs
       final clubsResponse = await http.get(Uri.parse('$apiUrl/user/${widget.profileUserId}/clubs'));
+      print("hello");
+      print(clubsResponse.statusCode);
       if (clubsResponse.statusCode != 200) throw Exception('Failed to load clubs');
 
       final List<dynamic> clubData = jsonDecode(clubsResponse.body)['clubs'];

@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../profilemain.dart'; // Import your profile page
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
 class UserListPage extends StatefulWidget {
   final int userId;
@@ -96,11 +97,9 @@ class _UserListPageState extends State<UserListPage> {
       child: ListTile(
         leading: GestureDetector(
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ProfileMainPage(profileUserId: user['id']),
-              ),
+            PersistentNavBarNavigator.pushNewScreen(
+              context, 
+              screen: ProfileMainPage(profileUserId: user['id']), 
             );
           },
           child: CircleAvatar(

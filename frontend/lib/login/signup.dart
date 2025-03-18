@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:frontend/login/login.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -59,9 +61,8 @@ class _SignUpPageState extends State<SignUpPage> {
             await prefs.setString("last_name", lastName);
 
             if (!mounted) return;
-            Navigator.pushReplacement(
+            PersistentNavBarNavigator.pop(
               context,
-              MaterialPageRoute(builder: (context) => PostsPage()),
             );
           } else {
             ScaffoldMessenger.of(context).showSnackBar(

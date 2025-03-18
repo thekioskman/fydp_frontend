@@ -6,6 +6,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../clubs/club.dart';
 import '../clubs/clubdetail.dart';
 import '../profile/components/profilesection.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:frontend/profile/profilemain.dart';
+import 'package:frontend/clubs/club_home_page.dart';
 
 class SearchPage extends StatefulWidget {
   @override
@@ -127,13 +130,9 @@ class _SearchPageState extends State<SearchPage> {
                         title: Text(club['name']),
                         subtitle: Text(club['description'] ?? "No description available"),
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ClubDetailPage(
-                                club: Club.fromJson(club),
-                              ),
-                            ),
+                          PersistentNavBarNavigator.pushNewScreen(
+                            context, 
+                            screen: ClubHomePage(club: Club.fromJson(club)), 
                           );
                         },
                       )).toList(),
@@ -182,14 +181,9 @@ class _SearchPageState extends State<SearchPage> {
                         title: Text(user['username']),
                         subtitle: Text("${user['first_name']} ${user['last_name']}"),
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ProfileSectionPage(
-                                sectionName: "Profile",
-                                userId: user['id'],
-                              ),
-                            ),
+                          PersistentNavBarNavigator.pushNewScreen(
+                            context, 
+                            screen: ProfileMainPage(profileUserId: user['id']), 
                           );
                         },
                       )).toList(),
