@@ -7,7 +7,6 @@ import 'package:intl/intl.dart'; // For formatting timestamps
 import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/login/login.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart'; // https://pub.dev/packages/persistent_bottom_nav_bar
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
 class PostsPage extends StatefulWidget {

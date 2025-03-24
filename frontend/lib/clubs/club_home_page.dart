@@ -598,7 +598,7 @@ class _ClubHomePageState extends State<ClubHomePage> {
                                           onPressed: () {
                                             PersistentNavBarNavigator.pushNewScreen(
                                               context,
-                                              screen: EventDetailPage(eventData :allEvents[index]),
+                                              screen: EventDetailPage(eventData :allEvents[index], isOwner: isOwner),
                                               withNavBar: true, // OPTIONAL VALUE. True by default.
                                               pageTransitionAnimation: PageTransitionAnimation.cupertino,);
 

@@ -5,7 +5,6 @@ import 'package:http/http.dart' as http; // For HTTP requests
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart'; // https://pub.dev/packages/persistent_bottom_nav_bar
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // For caching data
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'club_home_page.dart';
 import 'club.dart';
 

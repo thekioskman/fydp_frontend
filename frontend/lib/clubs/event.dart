@@ -12,6 +12,7 @@ class Event {
   final double latitude;
   final double longitude;
   final int duration_minutes;
+  final int id;
 
 
   Event({
@@ -24,7 +25,8 @@ class Event {
     required this.eventUrl,
     required this.latitude,
     required this.longitude,
-    required this.duration_minutes
+    required this.duration_minutes,
+    required this.id
   });
 
   // Factory method to create an event from JSON
@@ -39,6 +41,7 @@ class Event {
       longitude: json['longitude'] ?? 0.0,
       latitude: json['latitude'] ?? 0.0,
       eventUrl: '/', // Default to home
+      id : json['id'] ?? -1
     );
   }
 }
