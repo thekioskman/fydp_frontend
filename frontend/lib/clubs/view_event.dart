@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class EventDetailPage extends StatefulWidget {
   final Event eventData;
@@ -23,8 +24,12 @@ class _EventDetailPageState extends State<EventDetailPage> {
   bool isInterested = false;
   bool isLoading = true;
   bool isUpdatingInterest = false;
+  bool isUpdatingVideoUrl = false;
   String user_id = "";
   List<int> interestedEventIds = [];
+  TextEditingController videoUrlController = TextEditingController();
+  late YoutubePlayerController _youtubeController;
+  bool _isValidUrl = true;
 
   @override
   void initState() {
@@ -33,7 +38,38 @@ class _EventDetailPageState extends State<EventDetailPage> {
       widget.eventData.latitude,
       widget.eventData.longitude,
     );
+    videoUrlController.text = widget.eventData.videoUrl ?? '';
     _loadUserData();
+    _initializeVideoPlayer();
+  }
+
+  @override
+  void dispose() {
+    if (_isValidUrl && widget.eventData.videoUrl != null && widget.eventData.videoUrl!.isNotEmpty) {
+      _youtubeController.dispose();
+    }
+    super.dispose();
+  }
+    void _initializeVideoPlayer() {
+    if (widget.eventData.videoUrl != null && widget.eventData.videoUrl!.isNotEmpty) {
+      try {
+        final videoId = YoutubePlayer.convertUrlToId(widget.eventData.videoUrl!);
+        if (videoId != null) {
+          _youtubeController = YoutubePlayerController(
+            initialVideoId: videoId,
+            flags: const YoutubePlayerFlags(
+              autoPlay: false,
+              mute: false,
+            ),
+          );
+          setState(() => _isValidUrl = true);
+        } else {
+          setState(() => _isValidUrl = false);
+        }
+      } catch (e) {
+        setState(() => _isValidUrl = false);
+      }
+    }
   }
 
   Future<void> _loadUserData() async {
@@ -145,6 +181,45 @@ class _EventDetailPageState extends State<EventDetailPage> {
     }
   }
 
+ Future<void> _updateVideoUrl() async {
+    if (isUpdatingVideoUrl || videoUrlController.text.isEmpty) return;
+    
+    setState(() => isUpdatingVideoUrl = true);
+    
+    try {
+      final apiUrl = dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000';
+      final endpoint = '$apiUrl/events/${widget.eventData.id}';
+      
+      final response = await http.patch(
+        Uri.parse(endpoint),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'video_url': videoUrlController.text,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Video URL updated successfully')),
+        );
+        // Update the event data with the new video URL
+        setState(() {
+          widget.eventData.videoUrl = videoUrlController.text;
+        });
+      } else {
+        throw Exception('Server responded with ${response.statusCode}');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error updating video URL: ${e.toString()}')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => isUpdatingVideoUrl = false);
+      }
+    }
+  }
+
   String formatEventTime(String time) {
     try {
       DateTime parsedTime = DateTime.parse("1970-01-01T$time");
@@ -154,7 +229,66 @@ class _EventDetailPageState extends State<EventDetailPage> {
     }
   }
 
-  @override
+  Widget _buildVideoSection() {
+    if (widget.eventData.videoUrl == null || widget.eventData.videoUrl!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    if (!_isValidUrl) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 16),
+          Text('Video:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(16),
+            color: Colors.red[50],
+            child: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Invalid YouTube URL',
+                    style: TextStyle(color: Colors.red[800]),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            'URL: ${widget.eventData.videoUrl}',
+            style: TextStyle(fontSize: 14, color: Colors.grey),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        Text('Video:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        YoutubePlayer(
+          controller: _youtubeController,
+          showVideoProgressIndicator: true,
+          progressIndicatorColor: Colors.blueAccent,
+          progressColors: const ProgressBarColors(
+            playedColor: Colors.blue,
+            handleColor: Colors.blueAccent,
+          ),
+          onReady: () {
+            // Optional: You can add logic when player is ready
+          },
+        ),
+        const SizedBox(height: 8),
+      ],
+    );
+  }
+
+ @override
   Widget build(BuildContext context) {
     if (isLoading) {
       return Scaffold(
@@ -170,7 +304,9 @@ class _EventDetailPageState extends State<EventDetailPage> {
           if (widget.isOwner)
             IconButton(
               icon: Icon(Icons.edit),
-              onPressed: () {/* Edit functionality */},
+              onPressed: () {
+                // Edit functionality if needed
+              },
             ),
         ],
       ),
@@ -204,6 +340,10 @@ class _EventDetailPageState extends State<EventDetailPage> {
             SizedBox(height: 16),
             Text(widget.eventData.description, style: TextStyle(fontSize: 18)),
             SizedBox(height: 16),
+            if (widget.eventData.videoUrl != null && widget.eventData.videoUrl!.isNotEmpty) ...[
+              _buildVideoSection(),
+            ],
+            SizedBox(height: 16),
             Text('Duration: ${widget.eventData.duration_minutes} minutes', 
                 style: TextStyle(fontSize: 18)),
             SizedBox(height: 16),
@@ -232,6 +372,37 @@ class _EventDetailPageState extends State<EventDetailPage> {
                 },
               ),
             ),
+            
+            // Owner-specific video URL controls at the bottom
+            if (widget.isOwner) ...[
+              SizedBox(height: 24),
+              Text('Manage Video URL:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              SizedBox(height: 8),
+              TextField(
+                controller: videoUrlController,
+                decoration: InputDecoration(
+                  labelText: 'Video URL',
+                  hintText: 'https://example.com/video',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.url,
+              ),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: isUpdatingVideoUrl ? null : _updateVideoUrl,
+                child: isUpdatingVideoUrl
+                    ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text('Update Video URL'),
+              ),
+              SizedBox(height: 24),
+            ],
           ],
         ),
       ),

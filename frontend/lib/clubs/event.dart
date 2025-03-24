@@ -13,6 +13,7 @@ class Event {
   final double longitude;
   final int duration_minutes;
   final int id;
+  String videoUrl;
 
 
   Event({
@@ -26,7 +27,8 @@ class Event {
     required this.latitude,
     required this.longitude,
     required this.duration_minutes,
-    required this.id
+    required this.id,
+    required this.videoUrl
   });
 
   // Factory method to create an event from JSON
@@ -41,7 +43,8 @@ class Event {
       longitude: json['longitude'] ?? 0.0,
       latitude: json['latitude'] ?? 0.0,
       eventUrl: '/', // Default to home
-      id : json['id'] ?? -1
+      id : json['id'] ?? -1,
+      videoUrl: json['video_url'] ?? ""
     );
   }
 }
